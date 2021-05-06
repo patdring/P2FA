@@ -76,3 +76,5 @@ class TestMethods(unittest.TestCase):
         self.assertEqual(resultTable.iloc[4]['Y'], 5.5)
         self.assertEqual(resultTable.iloc[4]['N'], 'N7')
         self.assertEqual(resultTable.iloc[4]['D'], 0.09999999999999964)
+
+#TODO add unittest to catch exception

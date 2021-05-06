@@ -1,7 +1,8 @@
 from tabulate import tabulate
 from bokeh.io import show, save, output_file
-from bokeh.layouts import row 
+from bokeh.layouts import row,widgetbox,gridplot, column
 from bokeh.plotting import figure
+from bokeh.models import ColumnDataSource, DataTable, TableColumn, Panel, Tabs
 
 import numpy as np
 import pandas as pd
@@ -18,11 +19,26 @@ class VisualizationError(Exception):
     """Raised when the input value is too large"""
     pass
 
-def plotData1(idealData, testData, matchIdealFunc, matchIdealSlope, matchIdealIntercept): 
+#TODO add boxplot for canidate!?
+
+
+
+def plotData0(table_data, title='title'):
+
+    source = ColumnDataSource(table_data)
+    columns = []
+
+    for c in table_data.columns:
+        columns.append(TableColumn(field=c, title=c))
+
+    data_table = DataTable(source=source, columns=columns, width=500, height=500, index_position=None, sizing_mode="fixed")
+    return Panel(child=data_table, title=title)
+
+def plotData1(idealData, testData, matchIdealFunc, matchIdealSlope, matchIdealIntercept, title='title'): 
     if matchIdealFunc == None or matchIdealSlope == None or matchIdealIntercept == None:
         raise VisualizationError("")
     
-    p = figure(title = 'Plot1' )
+    p = figure(title = 'Plot1')
       
     p.scatter('X','Y',source=testData, fill_alpha=0.5, size=10, color='blue', legend_label='testData')
     p.scatter('X', matchIdealFunc,source=idealData, fill_alpha=0.5, size=10, color='green', legend_label='idealData')
@@ -33,11 +49,9 @@ def plotData1(idealData, testData, matchIdealFunc, matchIdealSlope, matchIdealIn
     y_values = matchIdealSlope*x_values + matchIdealIntercept
     p.line(x_values, y_values[0], line_alpha=0.5, line_width=2, color='red', legend_label='Regression for ideal {} y={}*x+{}'.format(matchIdealFunc, matchIdealSlope[0][0], matchIdealIntercept[0]))
     
-    output_file('plot1.html')
-    save(p)
-    show(p)
+    return Panel(child=p, title=title)
 
-def plotData2(idealData, testData, matchIdealFunc):
+def plotData2(idealData, testData, matchIdealFunc, title='title'):
     if matchIdealFunc == None:
         raise VisualizationError("")
 
@@ -76,9 +90,7 @@ def plotData2(idealData, testData, matchIdealFunc):
         else:
             p.line(x_values[0], y_values[0], line_alpha=0.75, line_width=2, color='lightgray', legend_label='.')
 
-    output_file('plot2.html')
-    save(p)
-    show(p)
+    return Panel(child=p, title=title)
  
 def main():
     try:
@@ -90,6 +102,11 @@ def main():
         df_trainingData = trainingData.readDataFromDB()
         df_idealData = idealData.readDataFromDB()
         df_testData = testData.readDataFromDB()
+
+        vis_tabs = []
+        vis_tabs.append(plotData0(df_idealData, 'ideal data'))
+        vis_tabs.append(plotData0(df_trainingData, 'training data'))
+        vis_tabs.append(plotData0(df_testData, 'test data'))
         
         #df_trainingData = pd.read_csv("Table1_training.csv",delimiter = ';')
         #df_idealData = pd.read_csv("Table2_ideal.csv",delimiter = ';')
@@ -101,19 +118,22 @@ def main():
        
         x = mc.MyClass()
         minLses, greatestDeviations = x.getLeastSquareDeviations(df_trainingData, df_idealData)
+        vis_tabs.append(plotData0(greatestDeviations.reset_index(), 'Greatest Deviations'))
               
         print("\nGreatest Deviations\n"+tabulate(greatestDeviations, headers='keys', tablefmt='psql'))
         print("Function assignments (Training:Ideal)\n{}".format(minLses))
         
         resultTable, matchIdealFunc, matchIdealSlope, matchIdealIntercept = x.calcLinearRegression(df_testData, df_idealData, minLses, greatestDeviations)
 
-        plotData1(df_idealData, df_testData, matchIdealFunc, matchIdealSlope, matchIdealIntercept)
-        plotData2(df_idealData, df_testData, matchIdealFunc)
-    
+        vis_tabs.append(plotData1(df_idealData, df_testData, matchIdealFunc, matchIdealSlope, matchIdealIntercept))
+        vis_tabs.append(plotData2(df_idealData, df_testData, matchIdealFunc))
+        
         #write to sql database
         resultData.writeDataToDB(resultTable) 
         df_resultData = resultData.readDataFromDB()
+        vis_tabs.append(plotData0(df_resultData, 'Result Data'))
         print("Result Table\n"+tabulate(df_resultData, headers='keys', tablefmt='psql'))
+        show(Tabs(tabs=vis_tabs))
 
     except mc.LittleUsableDataError as e:
         print("Data is not usable: ")

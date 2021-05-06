@@ -28,7 +28,6 @@ class TrainingData(IdealData):
         super().__init__(csv_file, table_name, db_user, db_password, db_address, db_name)
 
     def _readCSV(self, csv_file):
-
         df_old = pd.DataFrame(None, columns = ['X'])   
         for i in range(0,len(csv_file)):
             df1 = pd.read_csv(csv_file[i],delimiter = ';')
