@@ -1,8 +1,8 @@
 from tabulate import tabulate
 from bokeh.io import show, save, output_file
-from bokeh.layouts import row,widgetbox,gridplot, column
+from bokeh.layouts import column
 from bokeh.plotting import figure
-from bokeh.models import ColumnDataSource, DataTable, TableColumn, Panel, Tabs
+from bokeh.models import ColumnDataSource, DataTable, TableColumn, Panel, Tabs, Div
 
 import numpy as np
 import pandas as pd
@@ -21,20 +21,28 @@ class VisualizationError(Exception):
 
 #TODO add boxplot for canidate!?
 
-
-
-def plotData0(table_data, title='title'):
-
+def plotData0(table_data, title='sample title', text="""Sample HTML Text"""):
     source = ColumnDataSource(table_data)
     columns = []
+
+    length_col = table_data.columns.shape[0]
 
     for c in table_data.columns:
         columns.append(TableColumn(field=c, title=c))
 
-    data_table = DataTable(source=source, columns=columns, width=500, height=500, index_position=None, sizing_mode="fixed")
-    return Panel(child=data_table, title=title)
+    if length_col > 25:
+        data_table = DataTable(source=source, columns=columns[:25], width=1000, height=1000, index_position=None, sizing_mode = "stretch_both")
+        data_table2 = DataTable(source=source, columns=columns[25:], width=1000, height=1000, index_position=None, sizing_mode = "stretch_both")
+        
+    else:
+        data_table = DataTable(source=source, columns=columns, width=1000, height=1000, index_position=None, sizing_mode = "stretch_both")
 
-def plotData1(idealData, testData, matchIdealFunc, matchIdealSlope, matchIdealIntercept, title='title'): 
+    div = Div(text=text,width=200, height=100)
+
+    layout = column(div, data_table)
+    return Panel(child=layout, title=title)
+
+def plotData1(idealData, testData, matchIdealFunc, matchIdealSlope, matchIdealIntercept, title='title', text="""Sample HTML Text"""): 
     if matchIdealFunc == None or matchIdealSlope == None or matchIdealIntercept == None:
         raise VisualizationError("")
     
@@ -48,10 +56,12 @@ def plotData1(idealData, testData, matchIdealFunc, matchIdealSlope, matchIdealIn
     x_values = np.arange(np.min(testData['X']), np.max(testData['X'])+1, step_size) 
     y_values = matchIdealSlope*x_values + matchIdealIntercept
     p.line(x_values, y_values[0], line_alpha=0.5, line_width=2, color='red', legend_label='Regression for ideal {} y={}*x+{}'.format(matchIdealFunc, matchIdealSlope[0][0], matchIdealIntercept[0]))
-    
-    return Panel(child=p, title=title)
+    div = Div(text=text,width=200, height=100)
+    layout = column(div, p)
 
-def plotData2(idealData, testData, matchIdealFunc, title='title'):
+    return Panel(child=layout, title=title)
+
+def plotData2(idealData, testData, matchIdealFunc, title='title', text="""Sample HTML Text"""):
     if matchIdealFunc == None:
         raise VisualizationError("")
 
@@ -90,7 +100,10 @@ def plotData2(idealData, testData, matchIdealFunc, title='title'):
         else:
             p.line(x_values[0], y_values[0], line_alpha=0.75, line_width=2, color='lightgray', legend_label='.')
 
-    return Panel(child=p, title=title)
+    div = Div(text=text,width=200, height=100)
+    layout = column(div, p)
+
+    return Panel(child=layout, title=title)
  
 def main():
     try:
