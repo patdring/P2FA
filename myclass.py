@@ -55,8 +55,8 @@ class MyClass:
         matchIdealFunc = None
         matchIdealSlope = None
         matchIdealIntercept = None
+        criterion = math.sqrt(2)
 
-        #remove doubles in index?
         for ct in greatestDeviations.columns:   
             y_ideal = idealData[minLses[ct]].values.reshape(length, 1)
             regr.fit(x_ideal, y_ideal)     
@@ -64,12 +64,11 @@ class MyClass:
             y_deviation = abs(y_test - y_pred)
             y_deviationMax = np.max(y_deviation)
 
-            # sort to take best criterion, extend list?
-            criterion = y_deviationMax <= (greatestDeviations[ct][minLses[ct]] * math.sqrt(2))
-            print("T:{} I:{} {} {} {}".format(ct, minLses[ct], y_deviationMax, greatestDeviations[ct][minLses[ct]]*math.sqrt(2), criterion))
+            crit_dev = abs(greatestDeviations[ct][minLses[ct]] - y_deviationMax)
+            print ("T:{} I:{} {}".format(ct, minLses[ct], crit_dev))
             
-            # we take the last matching one
-            if (criterion):           
+            if crit_dev < criterion:
+                criterion = crit_dev
                 testData = testData.assign(D=pd.DataFrame(y_deviation))
                 testData = testData.assign(N=pd.DataFrame([minLses[ct].replace('Y','N')]*length))
                 matchIdealFunc = minLses[ct]

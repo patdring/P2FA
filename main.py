@@ -1,8 +1,8 @@
 from tabulate import tabulate
 from bokeh.io import show, save, output_file
-from bokeh.layouts import column
+from bokeh.layouts import column, row
 from bokeh.plotting import figure
-from bokeh.models import ColumnDataSource, DataTable, TableColumn, Panel, Tabs, Div
+from bokeh.models import ColumnDataSource, DataTable, TableColumn, Panel, Tabs, Div, NumberFormatter
 
 import numpy as np
 import pandas as pd
@@ -24,22 +24,21 @@ class VisualizationError(Exception):
 def plotData0(table_data, title='sample title', text="""Sample HTML Text"""):
     source = ColumnDataSource(table_data)
     columns = []
+    div = Div(text=text)
 
-    length_col = table_data.columns.shape[0]
+    dt_width = table_data.columns.shape[0]*50
+    dt_height = table_data.index.shape[0]*30
 
     for c in table_data.columns:
-        columns.append(TableColumn(field=c, title=c))
+        print(c)
+        if 'X' in c or'Y' in c or 'D' in c:
+            columns.append(TableColumn(field=c, title=c, formatter=NumberFormatter(format="0.0")))
+        else:
+            columns.append(TableColumn(field=c, title=c))
 
-    if length_col > 25:
-        data_table = DataTable(source=source, columns=columns[:25], width=1000, height=1000, index_position=None, sizing_mode = "stretch_both")
-        data_table2 = DataTable(source=source, columns=columns[25:], width=1000, height=1000, index_position=None, sizing_mode = "stretch_both")
-        
-    else:
-        data_table = DataTable(source=source, columns=columns, width=1000, height=1000, index_position=None, sizing_mode = "stretch_both")
+    data_table = DataTable(source=source, columns=columns, height=dt_height, width=dt_width, index_position=None, sizing_mode = "stretch_width")
+    layout = column(div, data_table) 
 
-    div = Div(text=text,width=200, height=100)
-
-    layout = column(div, data_table)
     return Panel(child=layout, title=title)
 
 def plotData1(idealData, testData, matchIdealFunc, matchIdealSlope, matchIdealIntercept, title='title', text="""Sample HTML Text"""): 
@@ -107,26 +106,31 @@ def plotData2(idealData, testData, matchIdealFunc, title='title', text="""Sample
  
 def main():
     try:
-        trainingData = db.TrainingData(['Table1_0_training.csv', 'Table1_1_training.csv', 'Table1_2_training.csv', 'Table1_3_training.csv'], 'training_data')
-        idealData = db.IdealData('Table2_ideal.csv', 'ideal_data')
-        testData = db.TestData('Table3_test.csv', 'test_data')
-        resultData = db.ResultData('result_data')
+        #trainingData = db.TrainingData(['Table1_0_training.csv', 'Table1_1_training.csv', 'Table1_2_training.csv', 'Table1_3_training.csv'], 'training_data')
+        #idealData = db.IdealData('Table2_ideal.csv', 'ideal_data')
+        #testData = db.TestData('Table3_test.csv', 'test_data')
+        #resultData = db.ResultData('result_data')
 
-        df_trainingData = trainingData.readDataFromDB()
-        df_idealData = idealData.readDataFromDB()
-        df_testData = testData.readDataFromDB()
+        #df_trainingData = trainingData.readDataFromDB()
+        #df_idealData = idealData.readDataFromDB()
+        #df_testData = testData.readDataFromDB()
+
+        
+        df_trainingData = pd.read_csv("Table1_training.csv",delimiter = ';')
+        df_idealData = pd.read_csv("Table2_ideal.csv",delimiter = ';')
+        df_testData = pd.read_csv("Table3_test.csv",delimiter = ';')
 
         vis_tabs = []
         vis_tabs.append(plotData0(df_idealData, 'ideal data'))
         vis_tabs.append(plotData0(df_trainingData, 'training data'))
         vis_tabs.append(plotData0(df_testData, 'test data'))
-        
-        #df_trainingData = pd.read_csv("Table1_training.csv",delimiter = ';')
-        #df_idealData = pd.read_csv("Table2_ideal.csv",delimiter = ';')
-        #df_testData = pd.read_csv("Table3_test.csv",delimiter = ';')
 
         print("Training Data (raw)\n"+tabulate(df_trainingData, headers='keys', tablefmt='psql'))
-        print("\nIdeal Data (raw)\n"+tabulate(df_idealData, headers='keys', tablefmt='psql'))
+        print("\nIdeal Data (raw)\n"+tabulate(df_idealData.loc[:, :'Y10'], headers='keys', tablefmt='psql'))
+        print("\nIdeal Data (raw)\n"+tabulate(df_idealData.loc[:, 'Y11':'Y20'], headers='keys', tablefmt='psql'))
+        print("\nIdeal Data (raw)\n"+tabulate(df_idealData.loc[:, 'Y21':'Y30'], headers='keys', tablefmt='psql'))
+        print("\nIdeal Data (raw)\n"+tabulate(df_idealData.loc[:, 'Y31':'Y40'], headers='keys', tablefmt='psql'))
+        print("\nIdeal Data (raw)\n"+tabulate(df_idealData.loc[:, 'Y41':'Y50'], headers='keys', tablefmt='psql'))
         print("\nTest Data (raw)\n"+tabulate(df_testData, headers='keys', tablefmt='psql'))
        
         x = mc.MyClass()
@@ -142,8 +146,9 @@ def main():
         vis_tabs.append(plotData2(df_idealData, df_testData, matchIdealFunc))
         
         #write to sql database
-        resultData.writeDataToDB(resultTable) 
-        df_resultData = resultData.readDataFromDB()
+        #resultData.writeDataToDB(resultTable) 
+        #df_resultData = resultData.readDataFromDB()
+        df_resultData = resultTable
         vis_tabs.append(plotData0(df_resultData, 'Result Data'))
         print("Result Table\n"+tabulate(df_resultData, headers='keys', tablefmt='psql'))
         show(Tabs(tabs=vis_tabs))
