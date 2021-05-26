@@ -30,11 +30,11 @@ def plotData0(table_data, title='sample title', text="""Sample HTML Text"""):
     dt_height = table_data.index.shape[0]*30
 
     for c in table_data.columns:
-        print(c)
-        if 'X' in c or'Y' in c or 'D' in c:
-            columns.append(TableColumn(field=c, title=c, formatter=NumberFormatter(format="0.0")))
-        else:
-            columns.append(TableColumn(field=c, title=c))
+        #print(c)
+        #if 'x' in c or'y' in c or 'd' in c:
+        #    columns.append(TableColumn(field=c, title=c, formatter=NumberFormatter(format="0.0")))
+        #else:
+        columns.append(TableColumn(field=c, title=c))
 
     data_table = DataTable(source=source, columns=columns, height=dt_height, width=dt_width, index_position=None, sizing_mode = "stretch_width")
     layout = column(div, data_table) 
@@ -47,12 +47,12 @@ def plotData1(idealData, testData, matchIdealFunc, matchIdealSlope, matchIdealIn
     
     p = figure(title = 'Plot1')
       
-    p.scatter('X','Y',source=testData, fill_alpha=0.5, size=10, color='blue', legend_label='testData')
-    p.scatter('X', matchIdealFunc,source=idealData, fill_alpha=0.5, size=10, color='green', legend_label='idealData')
+    p.scatter('x','y',source=testData, fill_alpha=0.5, size=10, color='blue', legend_label='testData')
+    p.scatter('x', matchIdealFunc, source=idealData, fill_alpha=0.5, size=10, color='green', legend_label='idealData')
     
-    length = testData.X.values.shape[0]   
+    length = testData.x.values.shape[0]   
     step_size = 1
-    x_values = np.arange(np.min(testData['X']), np.max(testData['X'])+1, step_size) 
+    x_values = np.arange(np.min(testData['x']), np.max(testData['x'])+1, step_size) 
     y_values = matchIdealSlope*x_values + matchIdealIntercept
     p.line(x_values, y_values[0], line_alpha=0.5, line_width=2, color='red', legend_label='Regression for ideal {} y={}*x+{}'.format(matchIdealFunc, matchIdealSlope[0][0], matchIdealIntercept[0]))
     div = Div(text=text,width=200, height=100)
@@ -67,12 +67,12 @@ def plotData2(idealData, testData, matchIdealFunc, title='title', text="""Sample
     p = figure(title = 'Plot2')
     p.scatter('X','Y',source=testData, fill_alpha=0.5, size=10, color='blue', legend_label='testData')
 
-    length_test = testData.X.values.shape[0]
-    length_ideal = idealData.X.values.shape[0]
+    length_test = testData.x.values.shape[0]
+    length_ideal = idealData.x.values.shape[0]
     
-    x_ideal = idealData.X.values
-    x_test = testData.X.values
-    y_test = testData.Y.values
+    x_ideal = idealData.x.values
+    x_test = testData.x.values
+    y_test = testData.y.values
         
     x_ideal = x_ideal.reshape(length_ideal, 1)
     x_test = x_test.reshape(length_test, 1)
@@ -83,8 +83,8 @@ def plotData2(idealData, testData, matchIdealFunc, title='title', text="""Sample
 
     for ci in col_idealData[1:]: 
         step_size = 0.1
-        x_values = np.arange(np.min(testData['X']), np.max(testData['X'])+1, step_size)
-        x_values = x_values.reshape(int(length_test/step_size), 1)
+        x_values = np.arange(np.min(testData['x']), np.max(testData['x']), step_size)
+        x_values = x_values.reshape(-1, 1)
 
         y_ideal = idealData[ci].values   
         y_ideal = y_ideal.reshape(length_ideal, 1)
@@ -116,28 +116,32 @@ def main():
         #df_testData = testData.readDataFromDB()
 
         
-        df_trainingData = pd.read_csv("Table1_training.csv",delimiter = ';')
-        df_idealData = pd.read_csv("Table2_ideal.csv",delimiter = ';')
-        df_testData = pd.read_csv("Table3_test.csv",delimiter = ';')
+        df_trainingData = pd.read_csv("train.csv",delimiter = ',')
+        df_idealData = pd.read_csv("ideal.csv",delimiter = ',')
+        df_testData = pd.read_csv("test.csv",delimiter = ',')
+
+        df_testData = df_testData.sort_values(by='x')
 
         vis_tabs = []
         vis_tabs.append(plotData0(df_idealData, 'ideal data'))
         vis_tabs.append(plotData0(df_trainingData, 'training data'))
         vis_tabs.append(plotData0(df_testData, 'test data'))
 
-        print("Training Data (raw)\n"+tabulate(df_trainingData, headers='keys', tablefmt='psql'))
-        print("\nIdeal Data (raw)\n"+tabulate(df_idealData.loc[:, :'Y10'], headers='keys', tablefmt='psql'))
-        print("\nIdeal Data (raw)\n"+tabulate(df_idealData.loc[:, 'Y11':'Y20'], headers='keys', tablefmt='psql'))
-        print("\nIdeal Data (raw)\n"+tabulate(df_idealData.loc[:, 'Y21':'Y30'], headers='keys', tablefmt='psql'))
-        print("\nIdeal Data (raw)\n"+tabulate(df_idealData.loc[:, 'Y31':'Y40'], headers='keys', tablefmt='psql'))
-        print("\nIdeal Data (raw)\n"+tabulate(df_idealData.loc[:, 'Y41':'Y50'], headers='keys', tablefmt='psql'))
-        print("\nTest Data (raw)\n"+tabulate(df_testData, headers='keys', tablefmt='psql'))
+        #print("Training Data (raw)\n"+tabulate(df_trainingData, headers='keys', tablefmt='psql'))
+        
+        #print("\nIdeal Data (raw)\n"+tabulate(df_idealData.loc[:, :'y10'], headers='keys', tablefmt='psql'))
+        #print("\nIdeal Data (raw)\n"+tabulate(df_idealData.loc[:, 'y11':'y20'], headers='keys', tablefmt='psql'))
+        #print("\nIdeal Data (raw)\n"+tabulate(df_idealData.loc[:, 'y21':'y30'], headers='keys', tablefmt='psql'))
+        #print("\nIdeal Data (raw)\n"+tabulate(df_idealData.loc[:, 'y31':'y40'], headers='keys', tablefmt='psql'))
+        #print("\nIdeal Data (raw)\n"+tabulate(df_idealData.loc[:, 'y41':'y50'], headers='keys', tablefmt='psql'))
+        
+        #print("\nTest Data (raw)\n"+tabulate(df_testData, headers='keys', tablefmt='psql'))
        
         x = mc.MyClass()
         minLses, greatestDeviations = x.getLeastSquareDeviations(df_trainingData, df_idealData)
         vis_tabs.append(plotData0(greatestDeviations.reset_index(), 'Greatest Deviations'))
               
-        print("\nGreatest Deviations\n"+tabulate(greatestDeviations, headers='keys', tablefmt='psql'))
+        #print("\nGreatest Deviations\n"+tabulate(greatestDeviations, headers='keys', tablefmt='psql'))
         print("Function assignments (Training:Ideal)\n{}".format(minLses))
         
         resultTable, matchIdealFunc, matchIdealSlope, matchIdealIntercept = x.calcLinearRegression(df_testData, df_idealData, minLses, greatestDeviations)
@@ -145,12 +149,12 @@ def main():
         vis_tabs.append(plotData1(df_idealData, df_testData, matchIdealFunc, matchIdealSlope, matchIdealIntercept))
         vis_tabs.append(plotData2(df_idealData, df_testData, matchIdealFunc))
         
-        #write to sql database
-        #resultData.writeDataToDB(resultTable) 
-        #df_resultData = resultData.readDataFromDB()
-        df_resultData = resultTable
-        vis_tabs.append(plotData0(df_resultData, 'Result Data'))
-        print("Result Table\n"+tabulate(df_resultData, headers='keys', tablefmt='psql'))
+        # #write to sql database
+        # #resultData.writeDataToDB(resultTable) 
+        # #df_resultData = resultData.readDataFromDB()
+        # df_resultData = resultTable
+        # vis_tabs.append(plotData0(df_resultData, 'Result Data'))
+        # print("Result Table\n"+tabulate(df_resultData, headers='keys', tablefmt='psql'))
         show(Tabs(tabs=vis_tabs))
 
     except mc.LittleUsableDataError as e:
