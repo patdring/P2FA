@@ -7,7 +7,10 @@ from bokeh.models import ColumnDataSource, DataTable, TableColumn, Panel, Tabs, 
 import numpy as np
 import pandas as pd
 import math
-from sklearn import linear_model
+from sklearn.linear_model import (LinearRegression, TheilSenRegressor, RANSACRegressor, HuberRegressor)
+from sklearn.metrics import mean_squared_error
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.pipeline import make_pipeline
 import timeit
 
 import unittests as ut
@@ -42,13 +45,13 @@ def plotData0(table_data, title='sample title', text="""Sample HTML Text"""):
     return Panel(child=layout, title=title)
 
 def plotData1(idealData, testData, matchIdealFunc, matchIdealSlope, matchIdealIntercept, title='title', text="""Sample HTML Text"""): 
-    if matchIdealFunc == None or matchIdealSlope == None or matchIdealIntercept == None:
-        raise VisualizationError("")
+    #if matchIdealFunc == None or matchIdealSlope == None or matchIdealIntercept == None:
+    #    raise VisualizationError("")
     
     p = figure(title = 'Plot1')
       
     p.scatter('x','y',source=testData, fill_alpha=0.5, size=10, color='blue', legend_label='testData')
-    p.scatter('x', matchIdealFunc, source=idealData, fill_alpha=0.5, size=10, color='green', legend_label='idealData')
+    p.scatter('x', 'y21', source=idealData, fill_alpha=0.5, size=10, color='green', legend_label='idealData')
     
     length = testData.x.values.shape[0]   
     step_size = 1
@@ -61,11 +64,11 @@ def plotData1(idealData, testData, matchIdealFunc, matchIdealSlope, matchIdealIn
     return Panel(child=layout, title=title)
 
 def plotData2(idealData, testData, matchIdealFunc, title='title', text="""Sample HTML Text"""):
-    if matchIdealFunc == None:
-        raise VisualizationError("")
+    #if matchIdealFunc == None:
+    #    raise VisualizationError("")
 
     p = figure(title = 'Plot2')
-    p.scatter('X','Y',source=testData, fill_alpha=0.5, size=10, color='blue', legend_label='testData')
+    p.scatter('x','y',source=testData, fill_alpha=0.5, size=10, color='blue', legend_label='testData')
 
     length_test = testData.x.values.shape[0]
     length_ideal = idealData.x.values.shape[0]
@@ -78,7 +81,8 @@ def plotData2(idealData, testData, matchIdealFunc, title='title', text="""Sample
     x_test = x_test.reshape(length_test, 1)
     y_test = y_test.reshape(length_test, 1)
 
-    regr = linear_model.LinearRegression()
+    #regr = linear_model.LinearRegression()
+    regr = make_pipeline(PolynomialFeatures(3), LinearRegression())
     col_idealData = idealData.columns.values
 
     for ci in col_idealData[1:]: 
@@ -146,7 +150,7 @@ def main():
         
         resultTable, matchIdealFunc, matchIdealSlope, matchIdealIntercept = x.calcLinearRegression(df_testData, df_idealData, minLses, greatestDeviations)
 
-        vis_tabs.append(plotData1(df_idealData, df_testData, matchIdealFunc, matchIdealSlope, matchIdealIntercept))
+        #vis_tabs.append(plotData1(df_idealData, df_testData, matchIdealFunc, matchIdealSlope, matchIdealIntercept))
         vis_tabs.append(plotData2(df_idealData, df_testData, matchIdealFunc))
         
         # #write to sql database
@@ -158,17 +162,17 @@ def main():
         show(Tabs(tabs=vis_tabs))
 
     except mc.LittleUsableDataError as e:
-        print("Data is not usable: ")
+        print("Data is not usable! ")
         details = e.args[0]
         print(e)
 
     except mc.TestDataShapeError as e:
-        print("Data has not the expected shape: ")
+        print("Data has not the expected shape! ")
         details = e.args[0]
         print(e)
 
     except VisualizationError as e:
-        print("Data does not exist: ")
+        print("Data to visualize does not exist! ")
         details = e.args[0]
         print(e)
     
