@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 import math
 from sklearn.linear_model import (LinearRegression, TheilSenRegressor, RANSACRegressor, HuberRegressor)
-from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.pipeline import make_pipeline
 
@@ -49,17 +48,14 @@ class MyClass:
             raise TestDataShapeError("testData.shape[1]: {} is not 2!".format(testData.shape[1]))
         
         df = pd.DataFrame(None, columns = ['x', 'y', 'yp', 'yd', 'n'])
+        df_resultTable = pd.DataFrame(None, columns = ['x', 'y', 'yp', 'yd', 'n'])
         
-
         x_ideal = idealData.x.values.reshape(-1, 1)
         x_test = testData.x.values.reshape(-1, 1)
         y_test = testData.y.values.reshape(-1, 1)
 
         # replace with https://scikit-learn.org/stable/auto_examples/linear_model/plot_robust_fit.html#sphx-glr-auto-examples-linear-model-plot-robust-fit-py
         model = make_pipeline(PolynomialFeatures(3), LinearRegression())
-
-        #testData = testData.assign(d='-')
-        #testData = testData.assign(n='-')
 
         for ct in greatestDeviations.columns:   
             y_ideal = idealData[matches[ct]].values.reshape(-1, 1)
@@ -74,36 +70,7 @@ class MyClass:
             df['n'] = matches[ct]
             #df.loc[df['yd'] == 'foo']
 
-            print(df.loc[df['yd'] <= greatestDeviations[ct][matches[ct]]*math.sqrt(2)])
+            df_resultTable = df_resultTable.append(df.loc[df['yd'] <= greatestDeviations[ct][matches[ct]]*math.sqrt(2)])
 
-            #print(df)
-
-            # y_deviation = abs(y_test - y_pred)
-            # # TODO filter here!!!
-            # #print(y_deviation)
-            # y_deviationMax = np.max(y_deviation)
-
-            # crit_dev = abs(greatestDeviations[ct][matches[ct]] - y_deviationMax)
-            # print ("T:{} I:{} {} {}".format(ct, matches[ct], greatestDeviations[ct][matches[ct]], y_deviationMax))
-            
-            # #if crit_dev < criterion:
-            # if True:
-            #     criterion = crit_dev
-            #     testData = testData.assign(d=pd.DataFrame(y_deviation))
-            #     testData = testData.assign(n=pd.DataFrame([matches[ct].replace('y','n')]*testLength))
-                
-            #     matchIdealFunc = matches[ct]
-            #     #matchIdealSlope = model.coef_
-            #     #matchIdealIntercept = model.intercept_
-
-            #     print("matchIdealFunc {}".format(matchIdealFunc))
-            #     print("matchIdealSlope {}".format(matchIdealSlope))
-            #     print("matchIdealIntercept {}".format(matchIdealIntercept))
-
-        resultTable = testData.set_index('x')
-
-        matchIdealFunc = None
-        matchIdealSlope = None
-        matchIdealIntercept = None
-    
-        return resultTable, matchIdealFunc, matchIdealSlope, matchIdealIntercept
+            #testData = testData.assign(n=pd.DataFrame([matches[ct].replace('y','n')]*testLength))   
+        return df_resultTable
