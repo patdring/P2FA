@@ -59,13 +59,7 @@ def plotData1(testData, resultData, title='title', text="""Sample HTML Text"""):
     for m,c in result:
         p.scatter('x', 'y', source=resultData.loc[resultData['n'] == m], fill_alpha=0.75, size=start_size, color=c, legend_label=m)
         start_size -= 2
-    
-    #length = testData.x.values.shape[0]   
-    #step_size = 1
-    #x_values = np.arange(np.min(testData['x']), np.max(testData['x'])+1, step_size) 
-    #y_values = matchIdealSlope*x_values + matchIdealIntercept
-    #p.line(x_values, y_values[0], line_alpha=0.5, line_width=2, color='red', legend_label='Regression for ideal {} y={}*x+{}'.format(matchIdealFunc, matchIdealSlope[0][0], matchIdealIntercept[0]))
-    
+     
     div = Div(text=text,width=200, height=100)
     layout = column(div, p)
 
@@ -89,62 +83,58 @@ def plotData2(idealData, resultData, title='title', text="""Sample HTML Text""")
     model = make_pipeline(PolynomialFeatures(3), LinearRegression())
 
     start_line_width = 6
+    start_size = 12
+
     for m,c in result:
         y_ideal = idealData[m].values.reshape(-1, 1)
         model.fit(x_ideal, y_ideal)
         y_values = model.predict(x_values)
-        p.line(x_values.flatten(), y_values.flatten(), line_alpha=0.75, line_width=start_line_width, color=c, legend_label=m)
+        p.line(x_values.flatten(), y_values.flatten(), line_alpha=0.5, line_width=start_line_width, color=c, legend_label=m)
         start_line_width -= 0.5
+        p.scatter('x', 'y', source=resultData.loc[resultData['n'] == m], fill_alpha=0.75, size=start_size, color=c, marker = 'circle_dot', legend_label=m)
+        start_size -= 2
   
     div = Div(text=text,width=200, height=100)
     layout = column(div, p)
 
     return Panel(child=layout, title=title)
 
-# def plotData2(idealData, testData, matchIdealFunc, title='title', text="""Sample HTML Text"""):
-#     #if matchIdealFunc == None:
-#     #    raise VisualizationError("")
+def plotData3(idealData, resultData, trainingData, title='title', text="""Sample HTML Text"""):
+    #if matchIdealFunc == None:
+    #    raise VisualizationError("")
 
-#     p = figure(title = 'Plot2')
-#     p.scatter('x','y',source=testData, fill_alpha=0.5, size=10, color='blue', legend_label='testData')
+    p = figure(title = 'Plot3')
 
-#     length_test = testData.x.values.shape[0]
-#     length_ideal = idealData.x.values.shape[0]
-    
-#     x_ideal = idealData.x.values
-#     x_test = testData.x.values
-#     y_test = testData.y.values
-        
-#     x_ideal = x_ideal.reshape(length_ideal, 1)
-#     x_test = x_test.reshape(length_test, 1)
-#     y_test = y_test.reshape(length_test, 1)
+    train = trainingData.columns[1:]
+    colors = ['red', 'green', 'blue', 'yellow']
+    matches = resultData.n.unique()
+    result = list(zip(train, matches.tolist(), colors))
 
-#     #regr = linear_model.LinearRegression()
-#     regr = make_pipeline(PolynomialFeatures(3), LinearRegression())
-#     col_idealData = idealData.columns.values
+    x_ideal = idealData.x.values.reshape(-1, 1)
+    step_size = 0.1
+    x_values = np.arange(np.min(idealData['x']), np.max(idealData['x']), step_size)
+    x_values = x_values.reshape(-1, 1)
 
-#     for ci in col_idealData[1:]: 
-#         step_size = 0.1
-#         x_values = np.arange(np.min(testData['x']), np.max(testData['x']), step_size)
-#         x_values = x_values.reshape(-1, 1)
+    model = make_pipeline(PolynomialFeatures(3), LinearRegression())
 
-#         y_ideal = idealData[ci].values   
-#         y_ideal = y_ideal.reshape(length_ideal, 1)
-#         regr.fit(x_ideal, y_ideal)     
-#         y_values = regr.predict(x_values)
+    for i in idealData.columns[1:]:
+        y_ideal = idealData[i].values.reshape(-1, 1)
+        model.fit(x_ideal, y_ideal)
+        y_values = model.predict(x_values)
+        if i in matches:
+            p.line(x_values.flatten(), y_values.flatten(), line_alpha=1.0, line_width=2, color='black', legend_label='match')
+        else:
+            p.line(x_values.flatten(), y_values.flatten(), line_alpha=1.0, line_width=2, color='lightgray', legend_label='declined')   
 
-#         x_values = x_values.T
-#         y_values = y_values.T 
+    for t,m,c in result:
+        #p.line(x_values.flatten(), y_values.flatten(), line_alpha=0.5, line_width=start_line_width, color=c, legend_label=m)
+        p.scatter('x', t, source=trainingData, fill_alpha=1.0, size=9, color=c, marker = 'x', legend_label=t)
+        p.scatter('x', m, source=idealData, fill_alpha=1.0, size=9, color=c, marker = 'cross', legend_label=m)
+  
+    div = Div(text=text,width=200, height=100)
+    layout = column(div, p)
 
-#         if matchIdealFunc == ci:
-#             p.line(x_values[0], y_values[0], line_alpha=0.5, line_width=2, color='red', legend_label='Regression')
-#         else:
-#             p.line(x_values[0], y_values[0], line_alpha=0.75, line_width=2, color='lightgray', legend_label='.')
-
-#     div = Div(text=text,width=200, height=100)
-#     layout = column(div, p)
-
-#     return Panel(child=layout, title=title)
+    return Panel(child=layout, title=title)
  
 def main():
     try:
@@ -191,6 +181,7 @@ def main():
         vis_tabs.append(plotData0(df_resultTable, 'result table'))
         vis_tabs.append(plotData1(df_testData, df_resultTable))
         vis_tabs.append(plotData2(df_idealData, df_resultTable))
+        vis_tabs.append(plotData3(df_idealData, df_resultTable, df_trainingData))
         
         # #write to sql database
         # #resultData.writeDataToDB(resultTable) 
