@@ -163,6 +163,10 @@ def main(argv):
             elif opt in ('-v', '--verbose'):
                 verbose = True
 
+        if idealfile == '' or trainfile == '' or testfile == '':
+            print('main.py -i <idealfile> -t <trainfile> -e <testfile>')
+            sys.exit(2)
+
         trainingData = db.IdealData(trainfile, 'training_data')
         idealData = db.IdealData(idealfile, 'ideal_data')
         testData = db.TestData(testfile, 'test_data')
