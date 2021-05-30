@@ -13,6 +13,8 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn.pipeline import make_pipeline
 import timeit
 
+import sys, getopt
+
 import database as db
 import myclass as mc
 
@@ -135,11 +137,35 @@ def plotData3(idealData, resultData, trainingData, title='title', text="""Sample
 
     return Panel(child=layout, title=title)
  
-def main():
+def main(argv):
     try:
-        trainingData = db.IdealData('train.csv', 'training_data')
-        idealData = db.IdealData('ideal.csv', 'ideal_data')
-        testData = db.TestData('test.csv', 'test_data')
+        idealfile = ''
+        trainfile = ''     
+        testfile = ''
+        verbose = False
+
+        try:
+            opts, args = getopt.getopt(argv,"hi:t:e:v",["ifile=","tfile=","efile="])
+        except getopt.GetoptError:
+            print('main.py -i <idealfile> -t <trainfile> -e <testfile>')
+            sys.exit(2)
+
+        for opt, arg in opts:
+            if opt == '-h':
+                print('main.py -i <idealfile> -t <trainfile> -e <testfile>')
+                sys.exit()
+            elif opt in ("-i", "--ifile"):
+                idealfile = arg
+            elif opt in ("-t", "--tfile"):
+                trainfile = arg
+            elif opt in ("-e", "--efile"):
+                testfile = arg
+            elif opt in ('-v', '--verbose'):
+                verbose = True
+
+        trainingData = db.IdealData(trainfile, 'training_data')
+        idealData = db.IdealData(idealfile, 'ideal_data')
+        testData = db.TestData(testfile, 'test_data')
         resultData = db.ResultData('result_data')
 
         df_trainingData = trainingData.readDataFromDB()
@@ -157,36 +183,38 @@ def main():
         vis_tabs.append(plotData0(df_trainingData, 'training data (raw)'))
         vis_tabs.append(plotData0(df_testData, 'test data (x-sorted)'))
 
-        #print("Training Data (raw)\n"+tabulate(df_trainingData, headers='keys', tablefmt='psql'))
-        
-        #print("\nIdeal Data (raw)\n"+tabulate(df_idealData.loc[:, :'y10'], headers='keys', tablefmt='psql'))
-        #print("\nIdeal Data (raw)\n"+tabulate(df_idealData.loc[:, 'y11':'y20'], headers='keys', tablefmt='psql'))
-        #print("\nIdeal Data (raw)\n"+tabulate(df_idealData.loc[:, 'y21':'y30'], headers='keys', tablefmt='psql'))
-        #print("\nIdeal Data (raw)\n"+tabulate(df_idealData.loc[:, 'y31':'y40'], headers='keys', tablefmt='psql'))
-        #print("\nIdeal Data (raw)\n"+tabulate(df_idealData.loc[:, 'y41':'y50'], headers='keys', tablefmt='psql'))
-        
-        #print("\nTest Data (raw)\n"+tabulate(df_testData, headers='keys', tablefmt='psql'))
+        if verbose:
+            print("Training Data (raw)\n"+tabulate(df_trainingData, headers='keys', tablefmt='psql'))            
+            print("\nIdeal Data (raw)\n"+tabulate(df_idealData.loc[:, :'y10'], headers='keys', tablefmt='psql'))
+            print("\nIdeal Data (raw)\n"+tabulate(df_idealData.loc[:, 'y11':'y20'], headers='keys', tablefmt='psql'))
+            print("\nIdeal Data (raw)\n"+tabulate(df_idealData.loc[:, 'y21':'y30'], headers='keys', tablefmt='psql'))
+            print("\nIdeal Data (raw)\n"+tabulate(df_idealData.loc[:, 'y31':'y40'], headers='keys', tablefmt='psql'))
+            print("\nIdeal Data (raw)\n"+tabulate(df_idealData.loc[:, 'y41':'y50'], headers='keys', tablefmt='psql'))           
+            print("\nTest Data (raw)\n"+tabulate(df_testData, headers='keys', tablefmt='psql'))
        
         x = mc.MyClass()
         minLses, greatestDeviations = x.getLeastSquareDeviations(df_trainingData, df_idealData)
         greatestDeviations = greatestDeviations.rename_axis("I/T")
         vis_tabs.append(plotData0(greatestDeviations.reset_index(), 'greatest deviations'))
-              
-        #print("\nGreatest Deviations\n"+tabulate(greatestDeviations, headers='keys', tablefmt='psql'))
-        #print("Function assignments (Training:Ideal)\n{}".format(minLses))
+
+        if verbose:      
+            print("\nGreatest Deviations\n"+tabulate(greatestDeviations, headers='keys', tablefmt='psql'))
+            print("Function assignments (Training:Ideal)\n{}".format(minLses))
         
         df_resultTable = x.calcLinearRegression(df_testData, df_idealData, minLses, greatestDeviations)
 
-        #vis_tabs.append(plotData0(df_resultTable, 'result table'))
         vis_tabs.append(plotData1(df_testData, df_resultTable))
         vis_tabs.append(plotData2(df_idealData, df_resultTable))
         vis_tabs.append(plotData3(df_idealData, df_resultTable, df_trainingData))
         
-        # #write to sql database
+        #write to sql database
         resultData.writeDataToDB(df_resultTable) 
         df_resultData = resultData.readDataFromDB()
         vis_tabs.append(plotData0(df_resultData, 'result data'))
-        #print("Result Table\n"+tabulate(df_resultData, headers='keys', tablefmt='psql'))
+
+        if verbose:
+            print("Result Table\n"+tabulate(df_resultData, headers='keys', tablefmt='psql'))
+
         show(Tabs(tabs=vis_tabs))
 
     except mc.LittleUsableDataError as e:
@@ -212,5 +240,5 @@ def main():
         print("End")
  
 if __name__ == "__main__":
-    # TODO commandline parameter (too much parameters ?!)
-    print("Runtime: {}ms".format(timeit.timeit(main, number=1)))
+    runtime = timeit.Timer(lambda: main(sys.argv[1:])) 
+    print("Runtime: {}ms".format(runtime.timeit(1)))
