@@ -13,7 +13,6 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn.pipeline import make_pipeline
 import timeit
 
-import unittests as ut
 import database as db
 import myclass as mc
 
@@ -138,18 +137,18 @@ def plotData3(idealData, resultData, trainingData, title='title', text="""Sample
  
 def main():
     try:
-        #trainingData = db.TrainingData(['Table1_0_training.csv', 'Table1_1_training.csv', 'Table1_2_training.csv', 'Table1_3_training.csv'], 'training_data')
-        #idealData = db.IdealData('Table2_ideal.csv', 'ideal_data')
-        #testData = db.TestData('Table3_test.csv', 'test_data')
-        #resultData = db.ResultData('result_data')
+        trainingData = db.IdealData('train.csv', 'training_data')
+        idealData = db.IdealData('ideal.csv', 'ideal_data')
+        testData = db.TestData('test.csv', 'test_data')
+        resultData = db.ResultData('result_data')
 
-        #df_trainingData = trainingData.readDataFromDB()
-        #df_idealData = idealData.readDataFromDB()
-        #df_testData = testData.readDataFromDB()
+        df_trainingData = trainingData.readDataFromDB()
+        df_idealData = idealData.readDataFromDB()
+        df_testData = testData.readDataFromDB()
    
-        df_trainingData = pd.read_csv("train.csv",delimiter = ',')
-        df_idealData = pd.read_csv("ideal.csv",delimiter = ',')
-        df_testData = pd.read_csv("test.csv",delimiter = ',')
+        #df_trainingData = pd.read_csv("train.csv",delimiter = ',')
+        #df_idealData = pd.read_csv("ideal.csv",delimiter = ',')
+        #df_testData = pd.read_csv("test.csv",delimiter = ',')
 
         df_testData = df_testData.sort_values(by='x')
 
@@ -173,22 +172,21 @@ def main():
         greatestDeviations = greatestDeviations.rename_axis("I/T")
         vis_tabs.append(plotData0(greatestDeviations.reset_index(), 'greatest deviations'))
               
-        print("\nGreatest Deviations\n"+tabulate(greatestDeviations, headers='keys', tablefmt='psql'))
-        print("Function assignments (Training:Ideal)\n{}".format(minLses))
+        #print("\nGreatest Deviations\n"+tabulate(greatestDeviations, headers='keys', tablefmt='psql'))
+        #print("Function assignments (Training:Ideal)\n{}".format(minLses))
         
         df_resultTable = x.calcLinearRegression(df_testData, df_idealData, minLses, greatestDeviations)
 
-        vis_tabs.append(plotData0(df_resultTable, 'result table'))
+        #vis_tabs.append(plotData0(df_resultTable, 'result table'))
         vis_tabs.append(plotData1(df_testData, df_resultTable))
         vis_tabs.append(plotData2(df_idealData, df_resultTable))
         vis_tabs.append(plotData3(df_idealData, df_resultTable, df_trainingData))
         
         # #write to sql database
-        # #resultData.writeDataToDB(resultTable) 
-        # #df_resultData = resultData.readDataFromDB()
-        # df_resultData = resultTable
-        # vis_tabs.append(plotData0(df_resultData, 'Result Data'))
-        # print("Result Table\n"+tabulate(df_resultData, headers='keys', tablefmt='psql'))
+        resultData.writeDataToDB(df_resultTable) 
+        df_resultData = resultData.readDataFromDB()
+        vis_tabs.append(plotData0(df_resultData, 'result data'))
+        #print("Result Table\n"+tabulate(df_resultData, headers='keys', tablefmt='psql'))
         show(Tabs(tabs=vis_tabs))
 
     except mc.LittleUsableDataError as e:
@@ -209,10 +207,10 @@ def main():
     except Exception as e:
         details = e.args[0]
         print(e)
+
     finally:
         print("End")
  
 if __name__ == "__main__":
     # TODO commandline parameter (too much parameters ?!)
     print("Runtime: {}ms".format(timeit.timeit(main, number=1)))
-    ut.unittest.main()
