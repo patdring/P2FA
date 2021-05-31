@@ -2,8 +2,8 @@ from tabulate import tabulate
 from bokeh.io import show, save, output_file
 from bokeh.layouts import column, row
 from bokeh.plotting import figure
-from bokeh.models import (ColumnDataSource, DataTable, TableColumn, Panel, Tabs,
-                         Div, NumberFormatter)
+from bokeh.models import (ColumnDataSource, DataTable, TableColumn, Panel,
+                          Tabs, Div, NumberFormatter)
 import numpy as np
 import pandas as pd
 import math
@@ -310,7 +310,8 @@ def main(argv):
 
         for opt, arg in opts:
             if opt == '-h':
-                print('main.py -i <idealfile> -t <trainfile> -e <testfile> [-v]')
+                print(
+                    'main.py -i <idealfile> -t <trainfile> -e <testfile> [-v]')
                 sys.exit()
             elif opt in ('-i', '--ifile'):
                 idealfile = arg
@@ -341,14 +342,20 @@ def main(argv):
         df_testData = df_testData.sort_values(by='x')
 
         vis_tabs = []
-        vis_tabs.append(createDataTablePanel(df_idealData, 'Ideal Data (raw)', 
-            '<b>Ideal functions’</b> database table read from file {}'.format(idealfile)))
         vis_tabs.append(
-            createDataTablePanel(df_trainingData, 'Training Data (raw)', 
-            '<b>Training functions’</b> database table read from file {}'.format(trainfile)))
+            createDataTablePanel(
+                df_idealData, 'Ideal Data (raw)',
+                '<b>Ideal functions’</b> database table read from file {}'.
+                format(idealfile)))
         vis_tabs.append(
-            createDataTablePanel(df_testData, 'Test Data (x-sorted)', 
-            '<b>Test dataset</b> read from file {}'.format(testfile)))
+            createDataTablePanel(
+                df_trainingData, 'Training Data (raw)',
+                '<b>Training functions’</b> database table read from file {}'.
+                format(trainfile)))
+        vis_tabs.append(
+            createDataTablePanel(
+                df_testData, 'Test Data (x-sorted)',
+                '<b>Test dataset</b> read from file {}'.format(testfile)))
 
         if verbose:
             print('Training Data (raw)\n' +
@@ -379,9 +386,11 @@ def main(argv):
             df_trainingData, df_idealData)
         greatestDeviations = greatestDeviations.rename_axis('I/T')
         vis_tabs.append(
-            createDataTablePanel(greatestDeviations.reset_index(),
-                                 'Greatest Deviations Map (generated)', 
-                                 'Table with <b>greatest y-deviations</b> between <b>I</b>deal:<b>T</b>raining functions'))
+            createDataTablePanel(
+                greatestDeviations.reset_index(),
+                'Greatest Deviations Map (generated)',
+                'Table with <b>greatest y-deviations</b> between <b>I</b>deal:<b>T</b>raining functions'
+            ))
 
         if verbose:
             print(
@@ -389,21 +398,31 @@ def main(argv):
                 tabulate(greatestDeviations, headers='keys', tablefmt='psql'))
             print('Function assignments (Training: Ideal)\n{}'.format(minLses))
 
-        df_resultTable = p2f_alloc.mapPoints2Functions(df_testData, df_idealData,
-                                                minLses, greatestDeviations)
+        df_resultTable = p2f_alloc.mapPoints2Functions(df_testData,
+                                                       df_idealData, minLses,
+                                                       greatestDeviations)
 
-        vis_tabs.append(createMatchingPointsPanel(df_testData, df_resultTable, 'Matching Points (plotted)', 'Points from the test dataset mapped to ideal function also corresponding the condition y-deviation smaller than factor sqrt(2) are displayed/coloured'))
-        vis_tabs.append(createRegressionPlotPanel(df_idealData,
-                                                   df_resultTable, 'Regressions (plotted)'))
+        vis_tabs.append(
+            createMatchingPointsPanel(
+                df_testData, df_resultTable, 'Matching Points (plotted)',
+                'Points from the test dataset mapped to ideal function also corresponding the condition y-deviation smaller than factor sqrt(2) are displayed/coloured'
+            ))
+        vis_tabs.append(
+            createRegressionPlotPanel(df_idealData, df_resultTable,
+                                      'Regressions (plotted)'))
         vis_tabs.append(
             createMappedPointsPanel(df_idealData, df_resultTable,
-                                     df_trainingData, 'Mapped Points (plotted)'))
+                                    df_trainingData,
+                                    'Mapped Points (plotted)'))
 
         # write to sql database
         resultData.writeDataToDB(df_resultTable)
         df_resultData = resultData.readDataFromDB()
-        vis_tabs.append(createDataTablePanel(df_resultData, 'Result Data (generated)', 
-            '<b>Result</b> database table of the test-data, with mapping and y-deviation'))
+        vis_tabs.append(
+            createDataTablePanel(
+                df_resultData, 'Result Data (generated)',
+                '<b>Result</b> database table of the test-data, with mapping and y-deviation'
+            ))
 
         if verbose:
             print('Result Table\n' +

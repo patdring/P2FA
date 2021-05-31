@@ -97,9 +97,8 @@ class TestMethods(unittest.TestCase):
 
         matches, greatestDeviations = self.p2f_alloc.preselectFunctions(
             self._df_trainingData, self._df_idealData)
-        resultTable = self.p2f_alloc.mapPoints2Functions(self._df_testData,
-                                                  self._df_idealData, matches,
-                                                  greatestDeviations)
+        resultTable = self.p2f_alloc.mapPoints2Functions(
+            self._df_testData, self._df_idealData, matches, greatestDeviations)
 
         self.assertEqual(resultTable.iloc[0]['y'], 1.0)
         self.assertEqual(resultTable.iloc[0]['yd'], 0.9714285714285709)

@@ -21,6 +21,7 @@ class TestDataShapeError(CPoint2FunctionAllocatorError):
     """Raised when the input value is too large"""
     pass
 
+
 # methods with underscore _ should be considered as private
 class CPoint2FunctionAllocator:
     """
@@ -82,7 +83,7 @@ class CPoint2FunctionAllocator:
 
     # selection / select
     def mapPoints2Functions(self, testData, idealData, matches,
-                             greatestDeviations):
+                            greatestDeviations):
         """
         Prints the person's name and age.
 
