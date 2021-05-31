@@ -48,7 +48,7 @@ class TestMethods(unittest.TestCase):
         "y7": [2, 2, 3, 4, 6],
     })
 
-    x = mc.CPoint2FunctionAllocator()
+    p2f_alloc = mc.CPoint2FunctionAllocator()
 
     def test_1(self):
         """
@@ -66,7 +66,7 @@ class TestMethods(unittest.TestCase):
         None
         """
 
-        matches, greatestDeviations = self.x.preselectFunctions(
+        matches, greatestDeviations = self.p2f_alloc.preselectFunctions(
             self._df_trainingData, self._df_idealData)
 
         self.assertEqual(matches['y1'], 'y7')
@@ -95,9 +95,9 @@ class TestMethods(unittest.TestCase):
         None
         """
 
-        matches, greatestDeviations = self.x.preselectFunctions(
+        matches, greatestDeviations = self.p2f_alloc.preselectFunctions(
             self._df_trainingData, self._df_idealData)
-        resultTable = self.x.mapPoints2Functions(self._df_testData,
+        resultTable = self.p2f_alloc.mapPoints2Functions(self._df_testData,
                                                   self._df_idealData, matches,
                                                   greatestDeviations)
 
