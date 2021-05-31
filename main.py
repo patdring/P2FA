@@ -6,7 +6,8 @@ from bokeh.models import ColumnDataSource, DataTable, TableColumn, Panel, Tabs, 
 import numpy as np
 import pandas as pd
 import math
-from sklearn.linear_model import (LinearRegression, TheilSenRegressor, RANSACRegressor, HuberRegressor)
+from sklearn.linear_model import (LinearRegression, TheilSenRegressor,
+                                  RANSACRegressor, HuberRegressor)
 from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.pipeline import make_pipeline
@@ -15,11 +16,15 @@ import sys, getopt
 import database as db
 import myclass as mc
 
+
 class VisualizationError(Exception):
     '''Raised when data connot be visualized'''
     pass
 
-def createDataTablePanel(table_data, title='sample title', text='''Sample HTML Text'''):
+
+def createDataTablePanel(table_data,
+                         title='sample title',
+                         text='''Sample HTML Text'''):
     '''
     Returns a bokeh panel with a bokeh table and a description text.
 
@@ -36,21 +41,33 @@ def createDataTablePanel(table_data, title='sample title', text='''Sample HTML T
     columns = []
     div = Div(text=text)
 
-    dt_width = table_data.columns.shape[0]*75
-    dt_height = table_data.index.shape[0]*40
+    dt_width = table_data.columns.shape[0] * 75
+    dt_height = table_data.index.shape[0] * 40
 
     for c in table_data.columns:
         if 'x' in c or 'y' in c or 'd' in c:
-            columns.append(TableColumn(field=c, title=c, formatter=NumberFormatter(format='0.00000')))
+            columns.append(
+                TableColumn(field=c,
+                            title=c,
+                            formatter=NumberFormatter(format='0.00000')))
         else:
             columns.append(TableColumn(field=c, title=c))
 
-    data_table = DataTable(source=source, columns=columns, height=dt_height, width=dt_width, index_position=None, sizing_mode = 'stretch_both')
-    layout = column(div, data_table) 
+    data_table = DataTable(source=source,
+                           columns=columns,
+                           height=dt_height,
+                           width=dt_width,
+                           index_position=None,
+                           sizing_mode='stretch_both')
+    layout = column(div, data_table)
 
     return Panel(child=layout, title=title)
 
-def createMatchingPointsPanel(testData, resultData, title='title', text='''Sample HTML Text'''): 
+
+def createMatchingPointsPanel(testData,
+                              resultData,
+                              title='title',
+                              text='''Sample HTML Text'''):
     '''
     Returns a bokeh panel with bokeh scatter plot and a description text.
     Scatter Plot displays:
@@ -68,26 +85,42 @@ def createMatchingPointsPanel(testData, resultData, title='title', text='''Sampl
     '''
     #if matchIdealFunc == None or matchIdealSlope == None or matchIdealIntercept == None:
     #    raise VisualizationError('')
-    
+
     p = figure(title=title)
 
     colors = ['red', 'green', 'blue', 'yellow']
     matches = resultData.n.unique()
     result = list(zip(matches.tolist(), colors))
-      
-    p.scatter('x','y',source=testData, fill_alpha=0.25, size=10, color='gray', legend_label='test Data')
+
+    p.scatter('x',
+              'y',
+              source=testData,
+              fill_alpha=0.25,
+              size=10,
+              color='gray',
+              legend_label='test Data')
 
     start_size = 12
-    for m,c in result:
-        p.scatter('x', 'y', source=resultData.loc[resultData['n'] == m], fill_alpha=0.75, size=start_size, color=c, legend_label=m)
+    for m, c in result:
+        p.scatter('x',
+                  'y',
+                  source=resultData.loc[resultData['n'] == m],
+                  fill_alpha=0.75,
+                  size=start_size,
+                  color=c,
+                  legend_label=m)
         start_size -= 2
-     
-    div = Div(text=text,width=200, height=100)
+
+    div = Div(text=text, width=200, height=100)
     layout = column(div, p)
 
     return Panel(child=layout, title=title)
 
-def createRegressionPlotPanel(idealData, resultData, title='title', text='''Sample HTML Text'''):
+
+def createRegressionPlotPanel(idealData,
+                              resultData,
+                              title='title',
+                              text='''Sample HTML Text'''):
     '''
     Returns a bokeh panel with bokeh scatter plot,lines and a description text.
     Scatter Plot displays:
@@ -115,7 +148,8 @@ def createRegressionPlotPanel(idealData, resultData, title='title', text='''Samp
 
     x_ideal = idealData.x.values.reshape(-1, 1)
     step_size = 0.1
-    x_values = np.arange(np.min(idealData['x']), np.max(idealData['x']), step_size)
+    x_values = np.arange(np.min(idealData['x']), np.max(idealData['x']),
+                         step_size)
     x_values = x_values.reshape(-1, 1)
 
     model = make_pipeline(PolynomialFeatures(3), LinearRegression())
@@ -123,21 +157,38 @@ def createRegressionPlotPanel(idealData, resultData, title='title', text='''Samp
     start_line_width = 6
     start_size = 12
 
-    for m,c in result:
+    for m, c in result:
         y_ideal = idealData[m].values.reshape(-1, 1)
         model.fit(x_ideal, y_ideal)
         y_values = model.predict(x_values)
-        p.line(x_values.flatten(), y_values.flatten(), line_alpha=0.5, line_width=start_line_width, color=c, legend_label=m)
+        p.line(x_values.flatten(),
+               y_values.flatten(),
+               line_alpha=0.5,
+               line_width=start_line_width,
+               color=c,
+               legend_label=m)
         start_line_width -= 0.5
-        p.scatter('x', 'y', source=resultData.loc[resultData['n'] == m], fill_alpha=0.75, size=start_size, color=c, marker = 'circle_dot', legend_label=m)
+        p.scatter('x',
+                  'y',
+                  source=resultData.loc[resultData['n'] == m],
+                  fill_alpha=0.75,
+                  size=start_size,
+                  color=c,
+                  marker='circle_dot',
+                  legend_label=m)
         start_size -= 2
-  
-    div = Div(text=text,width=200, height=100)
+
+    div = Div(text=text, width=200, height=100)
     layout = column(div, p)
 
     return Panel(child=layout, title=title)
 
-def createMappedPointsPanel(idealData, resultData, trainingData, title='title', text='''Sample HTML Text'''):
+
+def createMappedPointsPanel(idealData,
+                            resultData,
+                            trainingData,
+                            title='title',
+                            text='''Sample HTML Text'''):
     '''
     Returns a bokeh panel with bokeh scatter plot,lines and a description text.
     Scatter Plot displays:
@@ -170,7 +221,8 @@ def createMappedPointsPanel(idealData, resultData, trainingData, title='title', 
 
     x_ideal = idealData.x.values.reshape(-1, 1)
     step_size = 0.1
-    x_values = np.arange(np.min(idealData['x']), np.max(idealData['x']), step_size)
+    x_values = np.arange(np.min(idealData['x']), np.max(idealData['x']),
+                         step_size)
     x_values = x_values.reshape(-1, 1)
 
     model = make_pipeline(PolynomialFeatures(3), LinearRegression())
@@ -180,19 +232,44 @@ def createMappedPointsPanel(idealData, resultData, trainingData, title='title', 
         model.fit(x_ideal, y_ideal)
         y_values = model.predict(x_values)
         if i in matches:
-            p.line(x_values.flatten(), y_values.flatten(), line_alpha=1.0, line_width=2, color='black', legend_label='match')
+            p.line(x_values.flatten(),
+                   y_values.flatten(),
+                   line_alpha=1.0,
+                   line_width=2,
+                   color='black',
+                   legend_label='match')
         else:
-            p.line(x_values.flatten(), y_values.flatten(), line_alpha=1.0, line_width=2, color='lightgray', legend_label='declined')   
+            p.line(x_values.flatten(),
+                   y_values.flatten(),
+                   line_alpha=1.0,
+                   line_width=2,
+                   color='lightgray',
+                   legend_label='declined')
 
-    for t,m,c in result:
-        p.scatter('x', t, source=trainingData, fill_alpha=1.0, size=9, color=c, marker = 'x', legend_label=t)
-        p.scatter('x', m, source=idealData, fill_alpha=1.0, size=9, color=c, marker = 'cross', legend_label=m)
-  
-    div = Div(text=text,width=200, height=100)
+    for t, m, c in result:
+        p.scatter('x',
+                  t,
+                  source=trainingData,
+                  fill_alpha=1.0,
+                  size=9,
+                  color=c,
+                  marker='x',
+                  legend_label=t)
+        p.scatter('x',
+                  m,
+                  source=idealData,
+                  fill_alpha=1.0,
+                  size=9,
+                  color=c,
+                  marker='cross',
+                  legend_label=m)
+
+    div = Div(text=text, width=200, height=100)
     layout = column(div, p)
 
     return Panel(child=layout, title=title)
- 
+
+
 def main(argv):
     '''
     The main function and entry point for the project. Gives help via command line 
@@ -212,12 +289,13 @@ def main(argv):
 
     try:
         idealfile = ''
-        trainfile = ''     
+        trainfile = ''
         testfile = ''
         verbose = False
 
         try:
-            opts, args = getopt.getopt(argv,'hi:t:e:v',['ifile=','tfile=','efile='])
+            opts, args = getopt.getopt(argv, 'hi:t:e:v',
+                                       ['ifile=', 'tfile=', 'efile='])
         except getopt.GetoptError:
             print('main.py -i <idealfile> -t <trainfile> -e <testfile>')
             sys.exit(2)
@@ -247,7 +325,7 @@ def main(argv):
         df_trainingData = trainingData.readDataFromDB()
         df_idealData = idealData.readDataFromDB()
         df_testData = testData.readDataFromDB()
-   
+
         #df_trainingData = pd.read_csv('train.csv',delimiter = ',')
         #df_idealData = pd.read_csv('ideal.csv',delimiter = ',')
         #df_testData = pd.read_csv('test.csv',delimiter = ',')
@@ -256,40 +334,67 @@ def main(argv):
 
         vis_tabs = []
         vis_tabs.append(createDataTablePanel(df_idealData, 'ideal data (raw)'))
-        vis_tabs.append(createDataTablePanel(df_trainingData, 'training data (raw)'))
-        vis_tabs.append(createDataTablePanel(df_testData, 'test data (x-sorted)'))
+        vis_tabs.append(
+            createDataTablePanel(df_trainingData, 'training data (raw)'))
+        vis_tabs.append(
+            createDataTablePanel(df_testData, 'test data (x-sorted)'))
 
         if verbose:
-            print('Training Data (raw)\n'+tabulate(df_trainingData, headers='keys', tablefmt='psql'))            
-            print('\nIdeal Data (raw)\n'+tabulate(df_idealData.loc[:, :'y10'], headers='keys', tablefmt='psql'))
-            print('\nIdeal Data (raw)\n'+tabulate(df_idealData.loc[:, 'y11':'y20'], headers='keys', tablefmt='psql'))
-            print('\nIdeal Data (raw)\n'+tabulate(df_idealData.loc[:, 'y21':'y30'], headers='keys', tablefmt='psql'))
-            print('\nIdeal Data (raw)\n'+tabulate(df_idealData.loc[:, 'y31':'y40'], headers='keys', tablefmt='psql'))
-            print('\nIdeal Data (raw)\n'+tabulate(df_idealData.loc[:, 'y41':'y50'], headers='keys', tablefmt='psql'))           
-            print('\nTest Data (raw)\n'+tabulate(df_testData, headers='keys', tablefmt='psql'))
-       
-        x = mc.MyClass()
-        minLses, greatestDeviations = x.getLeastSquareDeviations(df_trainingData, df_idealData)
-        greatestDeviations = greatestDeviations.rename_axis('I/T')
-        vis_tabs.append(createDataTablePanel(greatestDeviations.reset_index(), 'greatest deviations'))
+            print('Training Data (raw)\n' +
+                  tabulate(df_trainingData, headers='keys', tablefmt='psql'))
+            print('\nIdeal Data (raw)\n' + tabulate(
+                df_idealData.loc[:, :'y10'], headers='keys', tablefmt='psql'))
+            print('\nIdeal Data (raw)\n' +
+                  tabulate(df_idealData.loc[:, 'y11':'y20'],
+                           headers='keys',
+                           tablefmt='psql'))
+            print('\nIdeal Data (raw)\n' +
+                  tabulate(df_idealData.loc[:, 'y21':'y30'],
+                           headers='keys',
+                           tablefmt='psql'))
+            print('\nIdeal Data (raw)\n' +
+                  tabulate(df_idealData.loc[:, 'y31':'y40'],
+                           headers='keys',
+                           tablefmt='psql'))
+            print('\nIdeal Data (raw)\n' +
+                  tabulate(df_idealData.loc[:, 'y41':'y50'],
+                           headers='keys',
+                           tablefmt='psql'))
+            print('\nTest Data (raw)\n' +
+                  tabulate(df_testData, headers='keys', tablefmt='psql'))
 
-        if verbose:      
-            print('\nGreatest Deviations\n'+tabulate(greatestDeviations, headers='keys', tablefmt='psql'))
+        x = mc.MyClass()
+        minLses, greatestDeviations = x.getLeastSquareDeviations(
+            df_trainingData, df_idealData)
+        greatestDeviations = greatestDeviations.rename_axis('I/T')
+        vis_tabs.append(
+            createDataTablePanel(greatestDeviations.reset_index(),
+                                 'greatest deviations'))
+
+        if verbose:
+            print(
+                '\nGreatest Deviations\n' +
+                tabulate(greatestDeviations, headers='keys', tablefmt='psql'))
             print('Function assignments (Training:Ideal)\n{}'.format(minLses))
-        
-        df_resultTable = x.calcLinearRegression(df_testData, df_idealData, minLses, greatestDeviations)
+
+        df_resultTable = x.calcLinearRegression(df_testData, df_idealData,
+                                                minLses, greatestDeviations)
 
         vis_tabs.append(createMatchingPointsPanel(df_testData, df_resultTable))
-        vis_tabs.append(createRegressionPlotPanel(df_idealData, df_resultTable))
-        vis_tabs.append(createMappedPointsPanel(df_idealData, df_resultTable, df_trainingData))
-        
+        vis_tabs.append(createRegressionPlotPanel(df_idealData,
+                                                  df_resultTable))
+        vis_tabs.append(
+            createMappedPointsPanel(df_idealData, df_resultTable,
+                                    df_trainingData))
+
         #write to sql database
-        resultData.writeDataToDB(df_resultTable) 
+        resultData.writeDataToDB(df_resultTable)
         df_resultData = resultData.readDataFromDB()
         vis_tabs.append(createDataTablePanel(df_resultData, 'result data'))
 
         if verbose:
-            print('Result Table\n'+tabulate(df_resultData, headers='keys', tablefmt='psql'))
+            print('Result Table\n' +
+                  tabulate(df_resultData, headers='keys', tablefmt='psql'))
 
         show(Tabs(tabs=vis_tabs))
 
@@ -307,14 +412,15 @@ def main(argv):
         print('Data to visualize does not exist! ')
         details = e.args[0]
         print(e)
-    
+
     except Exception as e:
         details = e.args[0]
         print(e)
 
     finally:
         print('Program finished successfully!')
- 
+
+
 if __name__ == '__main__':
-    runtime = timeit.Timer(lambda: main(sys.argv[1:])) 
+    runtime = timeit.Timer(lambda: main(sys.argv[1:]))
     print('Runtime: {}ms'.format(runtime.timeit(1)))

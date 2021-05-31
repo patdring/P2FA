@@ -2,6 +2,7 @@ import unittest
 import pandas as pd
 import myclass as mc
 
+
 class TestMethods(unittest.TestCase):
     """
     A class to represent a person.
@@ -23,35 +24,29 @@ class TestMethods(unittest.TestCase):
         Prints the person's name and age.
     """
 
-    _df_testData = pd.DataFrame(
-        {
-            "x": [-2, -1, 0, 1, 2],
-            "y": [1, 2.1, 3.3, 4.4, 5.5],
-        }
-    )
+    _df_testData = pd.DataFrame({
+        "x": [-2, -1, 0, 1, 2],
+        "y": [1, 2.1, 3.3, 4.4, 5.5],
+    })
 
-    _df_trainingData = pd.DataFrame(
-        {
-            "x": [-2, -1, 0, 1, 2],
-            "y1": [1, 2, 3, 4, 6],
-            "y2": [2, 2, 0, -1, -2],
-            "y3": [4, 2, 0, 2, 4],
-            "y4": [2, 0, 2, 4, 8],
-        }
-    )
+    _df_trainingData = pd.DataFrame({
+        "x": [-2, -1, 0, 1, 2],
+        "y1": [1, 2, 3, 4, 6],
+        "y2": [2, 2, 0, -1, -2],
+        "y3": [4, 2, 0, 2, 4],
+        "y4": [2, 0, 2, 4, 8],
+    })
 
-    _df_idealData = pd.DataFrame(
-        {
-            "x": [-2, -1, 0, 1, 2],
-            "y1": [-2, -1, 0, 1, 2],
-            "y2": [2, 1, 0, -1, -2],
-            "y3": [4, 2, 0, 2, 4],
-            "y4": [2, 0, 2, 4, 8],
-            "y5": [9, 4, 1, -2, 1],
-            "y6": [8, 7, 5, 11, 2],
-            "y7": [2, 2, 3, 4, 6],
-        }
-    )
+    _df_idealData = pd.DataFrame({
+        "x": [-2, -1, 0, 1, 2],
+        "y1": [-2, -1, 0, 1, 2],
+        "y2": [2, 1, 0, -1, -2],
+        "y3": [4, 2, 0, 2, 4],
+        "y4": [2, 0, 2, 4, 8],
+        "y5": [9, 4, 1, -2, 1],
+        "y6": [8, 7, 5, 11, 2],
+        "y7": [2, 2, 3, 4, 6],
+    })
 
     x = mc.MyClass()
 
@@ -71,7 +66,8 @@ class TestMethods(unittest.TestCase):
         None
         """
 
-        matches, greatestDeviations = self.x.getLeastSquareDeviations(self._df_trainingData, self._df_idealData)
+        matches, greatestDeviations = self.x.getLeastSquareDeviations(
+            self._df_trainingData, self._df_idealData)
 
         self.assertEqual(matches['y1'], 'y7')
         self.assertEqual(matches['y2'], 'y2')
@@ -99,9 +95,12 @@ class TestMethods(unittest.TestCase):
         None
         """
 
-        matches, greatestDeviations = self.x.getLeastSquareDeviations(self._df_trainingData, self._df_idealData)
-        resultTable = self.x.calcLinearRegression(self._df_testData, self._df_idealData, matches, greatestDeviations)
-        
+        matches, greatestDeviations = self.x.getLeastSquareDeviations(
+            self._df_trainingData, self._df_idealData)
+        resultTable = self.x.calcLinearRegression(self._df_testData,
+                                                  self._df_idealData, matches,
+                                                  greatestDeviations)
+
         self.assertEqual(resultTable.iloc[0]['y'], 1.0)
         self.assertEqual(resultTable.iloc[0]['yd'], 0.9714285714285709)
         self.assertEqual(resultTable.iloc[0]['n'], 'y7')
