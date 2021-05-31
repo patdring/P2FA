@@ -7,23 +7,22 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn.pipeline import make_pipeline
 
 
-class MyClassError(Exception):
+class CPoint2FunctionAllocatorError(Exception):
     """Base class for exceptions in this module."""
     pass
 
 
-class LittleUsableDataError(MyClassError):
+class LittleUsableDataError(CPoint2FunctionAllocatorError):
     """Raised when the input value is too small"""
     pass
 
 
-class TestDataShapeError(MyClassError):
+class TestDataShapeError(CPoint2FunctionAllocatorError):
     """Raised when the input value is too large"""
     pass
 
-
 # methods with underscore _ should be considered as private
-class MyClass:
+class CPoint2FunctionAllocator:
     """
     A class to represent a person.
 
@@ -35,18 +34,19 @@ class MyClass:
 
     Methods
     -------
-    getLeastSquareDeviations(trainingData, idealData):
+    preselectFunctions(trainingData, idealData):
         ...
-    calcLinearRegression(testData, idealData, matches, greatestDeviations):
+    mapPoints2Functions(testData, idealData, matches, greatestDeviations):
         ...
     """
 
     # classifier / preselection / preselect
-    def getLeastSquareDeviations(self, trainingData, idealData):
+    def preselectFunctions(self, trainingData, idealData):
         """
         Prints the person's name and age.
 
-        If the argument 'additional' is passed, then it is appended after the main info.
+        If the argument 'additional' is passed, then it is appended after the 
+        main info.
 
         Parameters
         ----------
@@ -58,7 +58,7 @@ class MyClass:
         None
         """
 
-        #if valid_indicies.shape[0] < trainingData.x.shape[0]:
+        # if valid_indicies.shape[0] < trainingData.x.shape[0]:
         #   raise LittleUsableDataError("Only {} indicies are existing in both sets!".format(valid_indicies[0].shape[0]))
 
         lses = pd.DataFrame(None,
@@ -81,12 +81,13 @@ class MyClass:
         return matches, greatestDeviations
 
     # selection / select
-    def calcLinearRegression(self, testData, idealData, matches,
+    def mapPoints2Functions(self, testData, idealData, matches,
                              greatestDeviations):
         """
         Prints the person's name and age.
 
-        If the argument 'additional' is passed, then it is appended after the main info.
+        If the argument 'additional' is passed, then it is appended after the 
+        main info.
 
         Parameters
         ----------

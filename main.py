@@ -2,17 +2,18 @@ from tabulate import tabulate
 from bokeh.io import show, save, output_file
 from bokeh.layouts import column, row
 from bokeh.plotting import figure
-from bokeh.models import ColumnDataSource, DataTable, TableColumn, Panel, Tabs, Div, NumberFormatter
+from bokeh.models import ColumnDataSource, DataTable, TableColumn, Panel, Tabs,
+                         Div, NumberFormatter
 import numpy as np
 import pandas as pd
 import math
-from sklearn.linear_model import (LinearRegression, TheilSenRegressor,
-                                  RANSACRegressor, HuberRegressor)
+from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.pipeline import make_pipeline
 import timeit
-import sys, getopt
+import sys
+import getopt
 import database as db
 import myclass as mc
 
@@ -34,7 +35,8 @@ def createDataTablePanel(table_data,
                     text (str): A [html formatted] description text
 
             Returns:
-                    Panel (bokeh.models.widgets.panels): Panel which can be added as a tab
+                    Panel (bokeh.models.widgets.panels): Panel which can be 
+                    added as a tab
     '''
 
     source = ColumnDataSource(table_data)
@@ -81,9 +83,10 @@ def createMatchingPointsPanel(testData,
                     text (str): A [html formatted] description text
 
             Returns:
-                    Panel (bokeh.models.widgets.panels): Panel which can be added as a tab
+                    Panel (bokeh.models.widgets.panels): Panel which can be 
+                    added as a tab
     '''
-    #if matchIdealFunc == None or matchIdealSlope == None or matchIdealIntercept == None:
+    # if matchIdealFunc == None or matchIdealSlope == None or matchIdealIntercept == None:
     #    raise VisualizationError('')
 
     p = figure(title=title)
@@ -134,10 +137,11 @@ def createRegressionPlotPanel(idealData,
                     text (str): A [html formatted] description text
 
             Returns:
-                    Panel (bokeh.models.widgets.panels): Panel which can be added as a tab
+                    Panel (bokeh.models.widgets.panels): Panel which can be 
+                    added as a tab
     '''
 
-    #if matchIdealFunc == None:
+    # if matchIdealFunc == None:
     #    raise VisualizationError('')
 
     p = figure(title=title)
@@ -195,21 +199,25 @@ def createMappedPointsPanel(idealData,
         - TODO
         - TODO
 
-            Parameters:
-                    idealData (pandas.DataFrame): A frame with one column for x and several for y values 
-                                                  representing training functions
-                    resultData (pandas.DataFrame): A frame with mapped x,y values to an ideal function 
-                                                   and the existing deviation
-                    trainingdata (pandas.DataFrame): A frame with one column for x and several for y values 
-                                                     representing training functions
-                    title (str): Title text display describing tab
-                    text (str): A [html formatted] description text
+        Parameters:
+                idealData (pandas.DataFrame): A frame with one column for x and
+                                              several for y values representing
+                                              training functions
+                resultData (pandas.DataFrame): A frame with mapped x,y values 
+                                               to an ideal function and the 
+                                               existing deviation
+                trainingdata (pandas.DataFrame): A frame with one column for x 
+                                                 and several for y values 
+                                                 representing training functions
+                title (str): Title text display describing tab
+                text (str): A [html formatted] description text
 
-            Returns:
-                    Panel (bokeh.models.widgets.panels): Panel which can be added as a tab
+        Returns:
+                Panel (bokeh.models.widgets.panels): Panel which can be added 
+                as a tab
     '''
 
-    #if matchIdealFunc == None:
+    # if matchIdealFunc == None:
     #    raise VisualizationError('')
 
     p = figure(title)
@@ -272,12 +280,12 @@ def createMappedPointsPanel(idealData,
 
 def main(argv):
     '''
-    The main function and entry point for the project. Gives help via command line 
-    and allows to pass the relevant CSV files via parameters. Also allows the activation 
-    of a verbose mode. Is responsible for the visualization of tables and graphs. 
-    Main functionality, searches for suitable candidates from ideal and training data by 
-    means of criterion and then maps them to test data by means of calculated regression 
-    and another criterion.
+    The main function and entry point for the project. Gives help via command 
+    line and allows to pass the relevant CSV files via parameters. Also allows
+    the activation of a verbose mode. Is responsible for the visualization of 
+    tables and graphs. Main functionality, searches for suitable candidates 
+    from ideal and training data by means of criterion and then maps them to 
+    test data by means of calculated regression and another criterion.
 
     1st criterion: TODO
     2nd criterion: TODO
@@ -363,8 +371,8 @@ def main(argv):
             print('\nTest Data (raw)\n' +
                   tabulate(df_testData, headers='keys', tablefmt='psql'))
 
-        x = mc.MyClass()
-        minLses, greatestDeviations = x.getLeastSquareDeviations(
+        x = mc.CPoint2FunctionAllocator()
+        minLses, greatestDeviations = x.preselectFunctions(
             df_trainingData, df_idealData)
         greatestDeviations = greatestDeviations.rename_axis('I/T')
         vis_tabs.append(
@@ -377,7 +385,7 @@ def main(argv):
                 tabulate(greatestDeviations, headers='keys', tablefmt='psql'))
             print('Function assignments (Training:Ideal)\n{}'.format(minLses))
 
-        df_resultTable = x.calcLinearRegression(df_testData, df_idealData,
+        df_resultTable = x.mapPoints2Functions(df_testData, df_idealData,
                                                 minLses, greatestDeviations)
 
         vis_tabs.append(createMatchingPointsPanel(df_testData, df_resultTable))
@@ -387,7 +395,7 @@ def main(argv):
             createMappedPointsPanel(df_idealData, df_resultTable,
                                     df_trainingData))
 
-        #write to sql database
+        # write to sql database
         resultData.writeDataToDB(df_resultTable)
         df_resultData = resultData.readDataFromDB()
         vis_tabs.append(createDataTablePanel(df_resultData, 'result data'))

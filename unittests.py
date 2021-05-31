@@ -48,7 +48,7 @@ class TestMethods(unittest.TestCase):
         "y7": [2, 2, 3, 4, 6],
     })
 
-    x = mc.MyClass()
+    x = mc.CPoint2FunctionAllocator()
 
     def test_1(self):
         """
@@ -66,7 +66,7 @@ class TestMethods(unittest.TestCase):
         None
         """
 
-        matches, greatestDeviations = self.x.getLeastSquareDeviations(
+        matches, greatestDeviations = self.x.preselectFunctions(
             self._df_trainingData, self._df_idealData)
 
         self.assertEqual(matches['y1'], 'y7')
@@ -95,9 +95,9 @@ class TestMethods(unittest.TestCase):
         None
         """
 
-        matches, greatestDeviations = self.x.getLeastSquareDeviations(
+        matches, greatestDeviations = self.x.preselectFunctions(
             self._df_trainingData, self._df_idealData)
-        resultTable = self.x.calcLinearRegression(self._df_testData,
+        resultTable = self.x.mapPoints2Functions(self._df_testData,
                                                   self._df_idealData, matches,
                                                   greatestDeviations)
 
