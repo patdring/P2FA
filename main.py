@@ -19,7 +19,7 @@ class VisualizationError(Exception):
     '''Raised when data connot be visualized'''
     pass
 
-def plotData0(table_data, title='sample title', text='''Sample HTML Text'''):
+def createDataTablePanel(table_data, title='sample title', text='''Sample HTML Text'''):
     '''
     Returns a bokeh panel with a bokeh table and a description text.
 
@@ -50,7 +50,7 @@ def plotData0(table_data, title='sample title', text='''Sample HTML Text'''):
 
     return Panel(child=layout, title=title)
 
-def plotData1(testData, resultData, title='title', text='''Sample HTML Text'''): 
+def createMatchingPointsPanel(testData, resultData, title='title', text='''Sample HTML Text'''): 
     '''
     Returns a bokeh panel with bokeh scatter plot and a description text.
     Scatter Plot displays:
@@ -87,7 +87,7 @@ def plotData1(testData, resultData, title='title', text='''Sample HTML Text'''):
 
     return Panel(child=layout, title=title)
 
-def plotData2(idealData, resultData, title='title', text='''Sample HTML Text'''):
+def createRegressionPlotPanel(idealData, resultData, title='title', text='''Sample HTML Text'''):
     '''
     Returns a bokeh panel with bokeh scatter plot,lines and a description text.
     Scatter Plot displays:
@@ -137,7 +137,7 @@ def plotData2(idealData, resultData, title='title', text='''Sample HTML Text''')
 
     return Panel(child=layout, title=title)
 
-def plotData3(idealData, resultData, trainingData, title='title', text='''Sample HTML Text'''):
+def createMappedPointsPanel(idealData, resultData, trainingData, title='title', text='''Sample HTML Text'''):
     '''
     Returns a bokeh panel with bokeh scatter plot,lines and a description text.
     Scatter Plot displays:
@@ -255,9 +255,9 @@ def main(argv):
         df_testData = df_testData.sort_values(by='x')
 
         vis_tabs = []
-        vis_tabs.append(plotData0(df_idealData, 'ideal data (raw)'))
-        vis_tabs.append(plotData0(df_trainingData, 'training data (raw)'))
-        vis_tabs.append(plotData0(df_testData, 'test data (x-sorted)'))
+        vis_tabs.append(createDataTablePanel(df_idealData, 'ideal data (raw)'))
+        vis_tabs.append(createDataTablePanel(df_trainingData, 'training data (raw)'))
+        vis_tabs.append(createDataTablePanel(df_testData, 'test data (x-sorted)'))
 
         if verbose:
             print('Training Data (raw)\n'+tabulate(df_trainingData, headers='keys', tablefmt='psql'))            
@@ -271,7 +271,7 @@ def main(argv):
         x = mc.MyClass()
         minLses, greatestDeviations = x.getLeastSquareDeviations(df_trainingData, df_idealData)
         greatestDeviations = greatestDeviations.rename_axis('I/T')
-        vis_tabs.append(plotData0(greatestDeviations.reset_index(), 'greatest deviations'))
+        vis_tabs.append(createDataTablePanel(greatestDeviations.reset_index(), 'greatest deviations'))
 
         if verbose:      
             print('\nGreatest Deviations\n'+tabulate(greatestDeviations, headers='keys', tablefmt='psql'))
@@ -279,14 +279,14 @@ def main(argv):
         
         df_resultTable = x.calcLinearRegression(df_testData, df_idealData, minLses, greatestDeviations)
 
-        vis_tabs.append(plotData1(df_testData, df_resultTable))
-        vis_tabs.append(plotData2(df_idealData, df_resultTable))
-        vis_tabs.append(plotData3(df_idealData, df_resultTable, df_trainingData))
+        vis_tabs.append(createMatchingPointsPanel(df_testData, df_resultTable))
+        vis_tabs.append(createRegressionPlotPanel(df_idealData, df_resultTable))
+        vis_tabs.append(createMappedPointsPanel(df_idealData, df_resultTable, df_trainingData))
         
         #write to sql database
         resultData.writeDataToDB(df_resultTable) 
         df_resultData = resultData.readDataFromDB()
-        vis_tabs.append(plotData0(df_resultData, 'result data'))
+        vis_tabs.append(createDataTablePanel(df_resultData, 'result data'))
 
         if verbose:
             print('Result Table\n'+tabulate(df_resultData, headers='keys', tablefmt='psql'))
