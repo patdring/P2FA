@@ -19,11 +19,39 @@ class TestDataShapeError(MyClassError):
 
 # methods with underscore _ should be considered as private
 class MyClass:
+    """
+    A class to represent a person.
+
+    ...
+
+    Attributes
+    ----------
+    None
+
+    Methods
+    -------
+    getLeastSquareDeviations(trainingData, idealData):
+        ...
+    calcLinearRegression(testData, idealData, matches, greatestDeviations):
+        ...
+    """
     # classifier / preselection / preselect
     def getLeastSquareDeviations(self, trainingData, idealData):     
-        #valid_indicies = idealData.x.combine_first(trainingData.x).values
-        #print(valid_indicies)
-        
+        """
+        Prints the person's name and age.
+
+        If the argument 'additional' is passed, then it is appended after the main info.
+
+        Parameters
+        ----------
+        additional : str, optional
+            More info to be displayed (default is None)
+
+        Returns
+        -------
+        None
+        """
+
         #if valid_indicies.shape[0] < trainingData.x.shape[0]:
         #   raise LittleUsableDataError("Only {} indicies are existing in both sets!".format(valid_indicies[0].shape[0]))
 
@@ -44,6 +72,21 @@ class MyClass:
 
     # selection / select
     def calcLinearRegression(self, testData, idealData, matches, greatestDeviations):       
+        """
+        Prints the person's name and age.
+
+        If the argument 'additional' is passed, then it is appended after the main info.
+
+        Parameters
+        ----------
+        additional : str, optional
+            More info to be displayed (default is None)
+
+        Returns
+        -------
+        None
+        """
+
         if testData.shape[1] != 2:
             raise TestDataShapeError("testData.shape[1]: {} is not 2!".format(testData.shape[1]))
         
@@ -54,7 +97,6 @@ class MyClass:
         x_test = testData.x.values.reshape(-1, 1)
         y_test = testData.y.values.reshape(-1, 1)
 
-        # replace with https://scikit-learn.org/stable/auto_examples/linear_model/plot_robust_fit.html#sphx-glr-auto-examples-linear-model-plot-robust-fit-py
         model = make_pipeline(PolynomialFeatures(3), LinearRegression())
 
         for ct in greatestDeviations.columns:   
@@ -68,9 +110,7 @@ class MyClass:
             df['yp'] = y_pred.T[0]
             df['yd'] = abs(y_test - y_pred).T[0]
             df['n'] = matches[ct]
-            #df.loc[df['yd'] == 'foo']
 
             df_resultTable = df_resultTable.append(df.loc[df['yd'] <= greatestDeviations[ct][matches[ct]]*math.sqrt(2)])
 
-            #testData = testData.assign(n=pd.DataFrame([matches[ct].replace('y','n')]*testLength))   
         return df_resultTable

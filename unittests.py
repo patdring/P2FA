@@ -3,6 +3,25 @@ import pandas as pd
 import myclass as mc
 
 class TestMethods(unittest.TestCase):
+    """
+    A class to represent a person.
+
+    ...
+
+    Attributes
+    ----------
+    name : str
+        first name of the person
+    surname : str
+        family name of the person
+    age : int
+        age of the person
+
+    Methods
+    -------
+    info(additional=""):
+        Prints the person's name and age.
+    """
 
     _df_testData = pd.DataFrame(
         {
@@ -37,6 +56,21 @@ class TestMethods(unittest.TestCase):
     x = mc.MyClass()
 
     def test_1(self):
+        """
+        Prints the person's name and age.
+
+        If the argument 'additional' is passed, then it is appended after the main info.
+
+        Parameters
+        ----------
+        additional : str, optional
+            More info to be displayed (default is None)
+
+        Returns
+        -------
+        None
+        """
+
         matches, greatestDeviations = self.x.getLeastSquareDeviations(self._df_trainingData, self._df_idealData)
 
         self.assertEqual(matches['y1'], 'y7')
@@ -50,6 +84,21 @@ class TestMethods(unittest.TestCase):
         self.assertEqual(greatestDeviations['y4']['y1'], 6)
 
     def test_2(self):
+        """
+        Prints the person's name and age.
+
+        If the argument 'additional' is passed, then it is appended after the main info.
+
+        Parameters
+        ----------
+        additional : str, optional
+            More info to be displayed (default is None)
+
+        Returns
+        -------
+        None
+        """
+
         matches, greatestDeviations = self.x.getLeastSquareDeviations(self._df_trainingData, self._df_idealData)
         resultTable = self.x.calcLinearRegression(self._df_testData, self._df_idealData, matches, greatestDeviations)
         
@@ -68,5 +117,3 @@ class TestMethods(unittest.TestCase):
         self.assertEqual(resultTable.iloc[6]['y'], 2.1)
         self.assertEqual(resultTable.iloc[6]['yd'], 1.1000000000000008)
         self.assertEqual(resultTable.iloc[6]['n'], 'y2')
-
-#TODO add unittest to catch exception
