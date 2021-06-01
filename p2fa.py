@@ -25,7 +25,7 @@ class VisualizationError(Exception):
 
 def createDataTablePanel(table_data,
                          title='sample title',
-                         text='''Sample HTML Text'''):
+                         text='Sample HTML Text'):
     '''
     Returns a bokeh panel with a bokeh table and a description text.
 
@@ -69,16 +69,21 @@ def createDataTablePanel(table_data,
 def createMatchingPointsPanel(testData,
                               resultData,
                               title='title',
-                              text='''Sample HTML Text'''):
+                              text='Sample HTML Text'):
     '''
     Returns a bokeh panel with bokeh scatter plot and a description text.
     Scatter Plot displays:
-        - ...
-        - ...
+
+        - Points from the test dataset mapped to ideal function also
+          corresponding the condition y-deviation smaller than factor
+          sqrt(2) are displayed/coloured
 
             Parameters:
-                    testData (pandas.DataFrame): x,y
-                    resultData (pandas.DataFrame):
+                    testData (pandas.DataFrame): A frame with x,y values
+                                                 representing test data
+                    resultData (pandas.DataFrame): A frame with mapped x,y values
+                                                   to an ideal function and the
+                                                   existing deviation
                     title (str): Title text display describing tab
                     text (str): A [html formatted] description text
 
@@ -123,16 +128,22 @@ def createMatchingPointsPanel(testData,
 def createRegressionPlotPanel(idealData,
                               resultData,
                               title='title',
-                              text='''Sample HTML Text'''):
+                              text='Sample HTML Text'):
     '''
     Returns a bokeh panel with bokeh scatter plot,lines and a description text.
     Scatter Plot displays:
-        - ...
-        - ...
+
+        - Matching points from test dataset and ideal functions
+        - Regression lines assigned to the corresponding Ideal functions 
+          points
 
             Parameters:
-                    idealData (pandas.DataFrame): x,y
-                    resultData (pandas.DataFrame):
+                    idealData (pandas.DataFrame): A frame with one column for x and
+                                                  several for y values representing
+                                                  ideal functions
+                    resultData (pandas.DataFrame): A frame with mapped x,y values
+                                                   to an ideal function and the
+                                                   existing deviation
                     title (str): Title text display describing tab
                     text (str): A [html formatted] description text
 
@@ -192,21 +203,23 @@ def createMappedPointsPanel(idealData,
                             resultData,
                             trainingData,
                             title='title',
-                            text='''Sample HTML Text'''):
+                            text='Sample HTML Text'):
     '''
     Returns a bokeh panel with bokeh scatter plot,lines and a description text.
     Scatter Plot displays:
-        - TODO
-        - TODO
+
+        - Visualization of points from training and ideal functions datasets
+        - With bokeh built-in zoom function, deviations(test to ideal or to 
+          regression lines) can be determined or displayed
 
         Parameters:
                 idealData (pandas.DataFrame): A frame with one column for x and
                                               several for y values representing
-                                              training functions
+                                              ideal functions
                 resultData (pandas.DataFrame): A frame with mapped x,y values
                                                to an ideal function and the
                                                existing deviation
-                trainingdata (pandas.DataFrame): A frame with one column for x
+                trainingData (pandas.DataFrame): A frame with one column for x
                                                  and several for y values
                                                  representing training functions
                 title (str): Title text display describing tab
@@ -287,12 +300,17 @@ def main(argv):
     from ideal and training data by means of criterion and then maps them to
     test data by means of calculated regression and another criterion.
 
-    1st criterion: TODO
-    2nd criterion: TODO
+    1st criterion: Minimize the sum of all y-deviations squared (Least-Square)
+    2nd criterion: Existing maximum deviation of the calculated regression does 
+                   not exceed the largest deviation between training dataset 
+                   and the ideal function chosen for it by more than factor 
+                   sqrt(2)
 
-            Parameters:
-                    argv (sys.argv): An array with command line parameters
+        Parameters:
+                argv (sys.argv): An array with command line parameters
 
+        Returns:
+                -
     '''
 
     try:
@@ -466,7 +484,6 @@ def main(argv):
 
     finally:
         print('Program finished normally!')
-
 
 if __name__ == '__main__':
     runtime = timeit.Timer(lambda: main(sys.argv[1:]))

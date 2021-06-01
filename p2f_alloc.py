@@ -24,40 +24,37 @@ class CLineTableDataShapeError(CPoint2FunctionAllocatorError):
 
 # methods with underscore _ should be considered as private
 class CPoint2FunctionAllocator:
-    """
+    '''
     A class to represent a person.
 
     ...
 
-    Attributes
-    ----------
-    None
+    Attributes:
+            -
 
-    Methods
-    -------
-    preselectFunctions(trainingData, idealData):
-        ...
-    mapPoints2Functions(testData, idealData, matches, greatestDeviations):
-        ...
-    """
+    Methods:
+            preselectFunctions(trainingData, idealData):
+                    ...
+            mapPoints2Functions(testData, idealData, matches, greatestDeviations):
+                    ...
+    '''
 
-    # classifier / preselection / preselect
     def preselectFunctions(self, trainingData, idealData):
-        """
-        Prints the person's name and age.
+        '''
+        Returns a bokeh panel with a bokeh table and a description text.
 
-        If the argument 'additional' is passed, then it is appended after the
-        main info.
+            Parameters:
+                trainingData (pandas.DataFrame): A frame with one column for x
+                                                 and several for y values
+                                                 representing training functions
+                idealData (pandas.DataFrame): A frame with one column for x and
+                                              several for y values representing
+                                              ideal functions
 
-        Parameters
-        ----------
-        additional : str, optional
-            More info to be displayed (default is None)
-
-        Returns
-        -------
-        None
-        """
+            Returns:
+                Panel (bokeh.models.widgets.panels): Panel which can be
+                added as a tab
+        '''
 
         # if valid_indicies.shape[0] < trainingData.x.shape[0]:
         #   raise LittleUsableDataError("Only {} indicies are existing in both sets!".format(valid_indicies[0].shape[0]))
@@ -84,21 +81,23 @@ class CPoint2FunctionAllocator:
     # selection / select
     def mapPoints2Functions(self, testData, idealData, matches,
                             greatestDeviations):
-        """
-        Prints the person's name and age.
+        '''
+        Returns a bokeh panel with a bokeh table and a description text.
 
-        If the argument 'additional' is passed, then it is appended after the
-        main info.
+            Parameters:
+                    testData (pandas.DataFrame): A frame with x,y values
+                                                 representing test data
+                    idealData (pandas.DataFrame): A frame with one column for x and
+                                                  several for y values representing
+                                                  ideal functions
+                    matches (list): Todo
+                    greatestDeviations (pandas.DataFrame): Todo
 
-        Parameters
-        ----------
-        additional : str, optional
-            More info to be displayed (default is None)
+            Returns:
+                Panel (bokeh.models.widgets.panels): Panel which can be
+                added as a tab
+        '''
 
-        Returns
-        -------
-        None
-        """
 
         if testData.shape[1] != 2:
             raise CLineTableDataShapeError(
