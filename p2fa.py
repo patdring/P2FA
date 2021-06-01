@@ -15,7 +15,7 @@ import timeit
 import sys
 import getopt
 import database as db
-import myclass as mc
+import p2f_alloc as p2fa
 
 
 class VisualizationError(Exception):
@@ -35,7 +35,7 @@ def createDataTablePanel(table_data,
                     text (str): A [html formatted] description text
 
             Returns:
-                    Panel (bokeh.models.widgets.panels): Panel which can be 
+                    Panel (bokeh.models.widgets.panels): Panel which can be
                     added as a tab
     '''
 
@@ -77,13 +77,13 @@ def createMatchingPointsPanel(testData,
         - ...
 
             Parameters:
-                    testData (pandas.DataFrame): x,y 
-                    resultData (pandas.DataFrame): 
+                    testData (pandas.DataFrame): x,y
+                    resultData (pandas.DataFrame):
                     title (str): Title text display describing tab
                     text (str): A [html formatted] description text
 
             Returns:
-                    Panel (bokeh.models.widgets.panels): Panel which can be 
+                    Panel (bokeh.models.widgets.panels): Panel which can be
                     added as a tab
     '''
     # if matchIdealFunc == None or matchIdealSlope == None or matchIdealIntercept == None:
@@ -131,13 +131,13 @@ def createRegressionPlotPanel(idealData,
         - ...
 
             Parameters:
-                    idealData (pandas.DataFrame): x,y 
-                    resultData (pandas.DataFrame): 
+                    idealData (pandas.DataFrame): x,y
+                    resultData (pandas.DataFrame):
                     title (str): Title text display describing tab
                     text (str): A [html formatted] description text
 
             Returns:
-                    Panel (bokeh.models.widgets.panels): Panel which can be 
+                    Panel (bokeh.models.widgets.panels): Panel which can be
                     added as a tab
     '''
 
@@ -203,17 +203,17 @@ def createMappedPointsPanel(idealData,
                 idealData (pandas.DataFrame): A frame with one column for x and
                                               several for y values representing
                                               training functions
-                resultData (pandas.DataFrame): A frame with mapped x,y values 
-                                               to an ideal function and the 
+                resultData (pandas.DataFrame): A frame with mapped x,y values
+                                               to an ideal function and the
                                                existing deviation
-                trainingdata (pandas.DataFrame): A frame with one column for x 
-                                                 and several for y values 
+                trainingdata (pandas.DataFrame): A frame with one column for x
+                                                 and several for y values
                                                  representing training functions
                 title (str): Title text display describing tab
                 text (str): A [html formatted] description text
 
         Returns:
-                Panel (bokeh.models.widgets.panels): Panel which can be added 
+                Panel (bokeh.models.widgets.panels): Panel which can be added
                 as a tab
     '''
 
@@ -280,11 +280,11 @@ def createMappedPointsPanel(idealData,
 
 def main(argv):
     '''
-    The main function and entry point for the project. Gives help via command 
+    The main function and entry point for the project. Gives help via command
     line and allows to pass the relevant CSV files via parameters. Also allows
-    the activation of a verbose mode. Is responsible for the visualization of 
-    tables and graphs. Main functionality, searches for suitable candidates 
-    from ideal and training data by means of criterion and then maps them to 
+    the activation of a verbose mode. Is responsible for the visualization of
+    tables and graphs. Main functionality, searches for suitable candidates
+    from ideal and training data by means of criterion and then maps them to
     test data by means of calculated regression and another criterion.
 
     1st criterion: TODO
@@ -305,13 +305,17 @@ def main(argv):
             opts, args = getopt.getopt(argv, 'hi:t:e:v',
                                        ['ifile=', 'tfile=', 'efile='])
         except getopt.GetoptError:
-            print('main.py -i <idealfile> -t <trainfile> -e <testfile> [-v]')
+            print('p2fa.py -i <idealfile> -t <trainfile> -e <testfile> [-v]')
+            sys.exit(2)
+
+        if not 'h' or 'v' in opts and len(opts) < 3:
+            print('p2fa.py -i <idealfile> -t <trainfile> -e <testfile> [-v]')
             sys.exit(2)
 
         for opt, arg in opts:
             if opt == '-h':
                 print(
-                    'main.py -i <idealfile> -t <trainfile> -e <testfile> [-v]')
+                    'p2fa.py -i <idealfile> -t <trainfile> -e <testfile> [-v]')
                 sys.exit()
             elif opt in ('-i', '--ifile'):
                 idealfile = arg
@@ -323,12 +327,12 @@ def main(argv):
                 verbose = True
 
         if idealfile == '' or trainfile == '' or testfile == '':
-            print('main.py -i <idealfile> -t <trainfile> -e <testfile> [-v]')
+            print('p2fa.py -i <idealfile> -t <trainfile> -e <testfile> [-v]')
             sys.exit(2)
 
-        trainingData = db.IdealData(trainfile, 'training_data')
-        idealData = db.IdealData(idealfile, 'ideal_data')
-        testData = db.TestData(testfile, 'test_data')
+        trainingData = db.CBasicTableData(trainfile, 'training_data')
+        idealData = db.CBasicTableData(idealfile, 'ideal_data')
+        testData = db.CLineTableData(testfile, 'test_data')
         resultData = db.ResultData('result_data')
 
         df_trainingData = trainingData.readDataFromDB()
@@ -381,7 +385,7 @@ def main(argv):
             print('\nTest Data (raw)\n' +
                   tabulate(df_testData, headers='keys', tablefmt='psql'))
 
-        p2f_alloc = mc.CPoint2FunctionAllocator()
+        p2f_alloc = p2fa.CPoint2FunctionAllocator()
         minLses, greatestDeviations = p2f_alloc.preselectFunctions(
             df_trainingData, df_idealData)
         greatestDeviations = greatestDeviations.rename_axis('I/T')
@@ -389,8 +393,8 @@ def main(argv):
             createDataTablePanel(
                 greatestDeviations.reset_index(),
                 'Greatest Deviations Map (generated)',
-                'Table with <b>greatest y-deviations</b> between <b>I</b>deal:<b>T</b>raining functions'
-            ))
+                'Table with <b>greatest y-deviations</b> between <b>I\
+                </b>deal: <b>T</b>raining functions'))
 
         if verbose:
             print(
@@ -404,25 +408,36 @@ def main(argv):
 
         vis_tabs.append(
             createMatchingPointsPanel(
-                df_testData, df_resultTable, 'Matching Points (plotted)',
-                'Points from the test dataset mapped to ideal function also corresponding the condition y-deviation smaller than factor sqrt(2) are displayed/coloured'
+                df_testData, df_resultTable, 'Matching Points (plotted)', 
+                'Points from the test dataset mapped to ideal function also\
+                corresponding the condition y-deviation smaller than factor\
+                sqrt(2) are displayed/coloured'\
             ))
         vis_tabs.append(
-            createRegressionPlotPanel(df_idealData, df_resultTable,
-                                      'Regressions (plotted)'))
+            createRegressionPlotPanel(
+                df_idealData, df_resultTable, 'Regressions (plotted)', 
+                'Matching points from test dataset and ideal functions are\
+                drawn. Also the regression lines assigned to the corresponding\
+                ideal functions points'
+            ))
         vis_tabs.append(
-            createMappedPointsPanel(df_idealData, df_resultTable,
-                                    df_trainingData,
-                                    'Mapped Points (plotted)'))
+            createMappedPointsPanel(
+                df_idealData, df_resultTable, df_trainingData,
+                'Mapped Points (plotted)', 
+                'Visualization of points from training <b>(x)</b> and ideal\
+                functions <b>(+)</b> datasets. With the help of the built-in\
+                zoom function, deviations(test to ideal or to regression\
+                lines) can be determined or displayed'
+            ))
 
         # write to sql database
         resultData.writeDataToDB(df_resultTable)
         df_resultData = resultData.readDataFromDB()
         vis_tabs.append(
             createDataTablePanel(
-                df_resultData, 'Result Data (generated)',
-                '<b>Result</b> database table of the test-data, with mapping and y-deviation'
-            ))
+                df_resultData,
+                'Result Data (generated)',
+                '<b>Result</b> database table of the testdata, with mapping and y-deviation'))
 
         if verbose:
             print('Result Table\n' +
@@ -430,12 +445,12 @@ def main(argv):
 
         show(Tabs(tabs=vis_tabs))
 
-    except mc.LittleUsableDataError as e:
+    except p2fa.LittleUsableDataError as e:
         print('Data is not usable! ')
         details = e.args[0]
         print(e)
 
-    except mc.TestDataShapeError as e:
+    except p2fa.CLineTableDataShapeError as e:
         print('Data has not the expected shape! ')
         details = e.args[0]
         print(e)
@@ -450,7 +465,7 @@ def main(argv):
         print(e)
 
     finally:
-        print('Program finished successfully!')
+        print('Program finished normally!')
 
 
 if __name__ == '__main__':

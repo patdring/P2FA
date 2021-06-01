@@ -17,7 +17,7 @@ class LittleUsableDataError(CPoint2FunctionAllocatorError):
     pass
 
 
-class TestDataShapeError(CPoint2FunctionAllocatorError):
+class CLineTableDataShapeError(CPoint2FunctionAllocatorError):
     """Raised when the input value is too large"""
     pass
 
@@ -46,7 +46,7 @@ class CPoint2FunctionAllocator:
         """
         Prints the person's name and age.
 
-        If the argument 'additional' is passed, then it is appended after the 
+        If the argument 'additional' is passed, then it is appended after the
         main info.
 
         Parameters
@@ -87,7 +87,7 @@ class CPoint2FunctionAllocator:
         """
         Prints the person's name and age.
 
-        If the argument 'additional' is passed, then it is appended after the 
+        If the argument 'additional' is passed, then it is appended after the
         main info.
 
         Parameters
@@ -101,18 +101,18 @@ class CPoint2FunctionAllocator:
         """
 
         if testData.shape[1] != 2:
-            raise TestDataShapeError("testData.shape[1]: {} is not 2!".format(
-                testData.shape[1]))
+            raise CLineTableDataShapeError(
+                "testData.shape[1]: {} is not 2!".format(testData.shape[1]))
 
-        df = pd.DataFrame(None, columns=['x', 'y', 'yp', 'yd', 'n'])
-        df_resultTable = pd.DataFrame(None,
-                                      columns=['x', 'y', 'yp', 'yd', 'n'])
+        df = pd.DataFrame(None, columns=['x', 'y', 'yd', 'n'])
+        df_resultTable = pd.DataFrame(None, columns=['x', 'y', 'yd', 'n'])
 
         x_ideal = idealData.x.values.reshape(-1, 1)
         x_test = testData.x.values.reshape(-1, 1)
         y_test = testData.y.values.reshape(-1, 1)
 
         model = make_pipeline(PolynomialFeatures(3), LinearRegression())
+        crit_factor = math.sqrt(2)
 
         for ct in greatestDeviations.columns:
             y_ideal = idealData[matches[ct]].values.reshape(-1, 1)
@@ -122,12 +122,11 @@ class CPoint2FunctionAllocator:
 
             df['x'] = x_test.T[0]
             df['y'] = y_test.T[0]
-            df['yp'] = y_pred.T[0]
             df['yd'] = abs(y_test - y_pred).T[0]
             df['n'] = matches[ct]
 
             df_resultTable = df_resultTable.append(
                 df.loc[df['yd'] <= greatestDeviations[ct][matches[ct]] *
-                       math.sqrt(2)])
+                       crit_factor])
 
         return df_resultTable

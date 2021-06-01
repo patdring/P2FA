@@ -1,6 +1,6 @@
 import unittest
 import pandas as pd
-import myclass as mc
+import p2f_alloc as p2fa
 
 
 class TestMethods(unittest.TestCase):
@@ -48,7 +48,7 @@ class TestMethods(unittest.TestCase):
         "y7": [2, 2, 3, 4, 6],
     })
 
-    p2f_alloc = mc.CPoint2FunctionAllocator()
+    p2f_alloc = p2fa.CPoint2FunctionAllocator()
 
     def test_1(self):
         """

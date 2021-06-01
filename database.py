@@ -5,7 +5,7 @@ import sqlalchemy as db
 import csv
 
 
-class IdealData:
+class CBasicTableData:
     """
     A class to represent a person.
 
@@ -25,6 +25,7 @@ class IdealData:
     info(additional=""):
         Prints the person's name and age.
     """
+
     def __init__(self,
                  csv_file,
                  table_name,
@@ -94,7 +95,7 @@ class IdealData:
         return pd.read_sql_table(self._table_name, self._connection)
 
 
-class TrainingData(IdealData):
+class CMultipleTableData(CBasicTableData):
     """
     A class to represent a person.
 
@@ -114,6 +115,7 @@ class TrainingData(IdealData):
     info(additional=""):
         Prints the person's name and age.
     """
+
     def __init__(self,
                  csv_file,
                  table_name,
@@ -164,7 +166,7 @@ class TrainingData(IdealData):
         self._data.to_sql(self._table_name, self._engine, if_exists='replace')
 
 
-class TestData(IdealData):
+class CLineTableData(CBasicTableData):
     """
     A class to represent a person.
 
@@ -184,6 +186,7 @@ class TestData(IdealData):
     info(additional=""):
         Prints the person's name and age.
     """
+
     def __init__(self,
                  csv_file,
                  table_name,
@@ -235,7 +238,7 @@ class TestData(IdealData):
         self._data.to_sql(self._table_name, self._engine, if_exists='replace')
 
 
-class ResultData(IdealData):
+class ResultData(CBasicTableData):
     """
     A class to represent a person.
 
@@ -255,6 +258,7 @@ class ResultData(IdealData):
     info(additional=""):
         Prints the person's name and age.
     """
+
     def __init__(self,
                  table_name,
                  csv_file=None,
