@@ -19,7 +19,7 @@ import p2f_alloc as p2fa
 
 
 class VisualizationError(Exception):
-    '''Raised when data connot be visualized'''
+    '''Raised when data cannot be visualized'''
     pass
 
 
@@ -38,6 +38,10 @@ def createDataTablePanel(table_data,
                     Panel (bokeh.models.widgets.panels): Panel which can be
                     added as a tab
     '''
+
+    if type(table_data) is not pd.DataFrame:
+        raise VisualizationError('Wrong data type, expected pandas.DataFrame\
+                                 , got {}!'.format(type(table_data)))
 
     source = ColumnDataSource(table_data)
     columns = []
@@ -91,13 +95,15 @@ def createMatchingPointsPanel(testData,
                     Panel (bokeh.models.widgets.panels): Panel which can be
                     added as a tab
     '''
-    # if matchIdealFunc == None or matchIdealSlope == None or matchIdealIntercept == None:
-    #    raise VisualizationError('')
 
     p = figure(title=title)
 
     colors = ['red', 'green', 'blue', 'yellow']
     matches = resultData.n.unique()
+
+    if (len(matches.tolist()) == 0):
+        raise VisualizationError('No matches to plot available!')
+
     result = list(zip(matches.tolist(), colors))
 
     p.scatter('x',
@@ -152,13 +158,14 @@ def createRegressionPlotPanel(idealData,
                     added as a tab
     '''
 
-    # if matchIdealFunc == None:
-    #    raise VisualizationError('')
-
     p = figure(title=title)
 
     colors = ['red', 'green', 'blue', 'yellow']
     matches = resultData.n.unique()
+
+    if (len(matches.tolist()) == 0):
+        raise VisualizationError('No matches to plot available!')
+
     result = list(zip(matches.tolist(), colors))
 
     x_ideal = idealData.x.values.reshape(-1, 1)
@@ -230,14 +237,15 @@ def createMappedPointsPanel(idealData,
                 as a tab
     '''
 
-    # if matchIdealFunc == None:
-    #    raise VisualizationError('')
-
     p = figure(title=title)
 
     train = trainingData.columns[1:]
     colors = ['red', 'green', 'blue', 'yellow']
     matches = resultData.n.unique()
+
+    if (len(matches.tolist()) == 0):
+        raise VisualizationError('No matches to plot available!')
+
     result = list(zip(train, matches.tolist(), colors))
 
     x_ideal = idealData.x.values.reshape(-1, 1)
@@ -463,12 +471,12 @@ def main(argv):
 
         show(Tabs(tabs=vis_tabs))
 
-    except p2fa.LittleUsableDataError as e:
+    except p2fa.UsableDataError as e:
         print('Data is not usable! ')
         details = e.args[0]
         print(e)
 
-    except p2fa.CLineTableDataShapeError as e:
+    except p2fa.TableDataShapeError as e:
         print('Data has not the expected shape! ')
         details = e.args[0]
         print(e)

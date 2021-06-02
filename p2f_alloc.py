@@ -1,47 +1,45 @@
 import numpy as np
 import pandas as pd
 import math
-from sklearn.linear_model import (LinearRegression, TheilSenRegressor,
-                                  RANSACRegressor, HuberRegressor)
+from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.pipeline import make_pipeline
 
-
-class CPoint2FunctionAllocatorError(Exception):
-    """Base class for exceptions in this module."""
+class Point2FunctionAllocatorError(Exception):
+    '''Base class for exceptions in this module.'''
     pass
 
 
-class LittleUsableDataError(CPoint2FunctionAllocatorError):
-    """Raised when the input value is too small"""
+class UsableDataError(Point2FunctionAllocatorError):
+    '''Raised when the input data is not usable'''
     pass
 
 
-class CLineTableDataShapeError(CPoint2FunctionAllocatorError):
-    """Raised when the input value is too large"""
+class TableDataShapeError(Point2FunctionAllocatorError):
+    '''Raised when the input datas` shape is too wrong'''
     pass
 
-
-# methods with underscore _ should be considered as private
 class CPoint2FunctionAllocator:
     '''
-    A class to represent a person.
-
-    ...
+    A class with methods uses training data to choose  ideal functions which 
+    are the best fit out of the provided. Also test data provided to determine
+    for each and every x-y-pair of values whether or not they can be assigned 
+    to the chosen ideal functions.
 
     Attributes:
             -
 
     Methods:
             preselectFunctions(trainingData, idealData):
-                    ...
+                    Choosing the ideal functions for the training functions
             mapPoints2Functions(testData, idealData, matches, greatestDeviations):
-                    ...
+                    Mapping the individual test case to the ideal functions
     '''
 
     def preselectFunctions(self, trainingData, idealData):
         '''
-        Returns a bokeh panel with a bokeh table and a description text.
+         Choosing the ideal functions for the training functions by how they 
+         minimize the sum of all y-deviations squared (Least-Square)
 
             Parameters:
                 trainingData (pandas.DataFrame): A frame with one column for x
@@ -52,12 +50,19 @@ class CPoint2FunctionAllocator:
                                               ideal functions
 
             Returns:
-                Panel (bokeh.models.widgets.panels): Panel which can be
-                added as a tab
+                matches (dict): A directory which assigns the training 
+                                functions selected by min. least-square to 
+                                ideal functions {T:I, ...}
+                greatesDeviations (pandas.DataFrame): A table which shows the 
+                                                      largest deviation between
+                                                      training (column) and 
+                                                      ideal (row) function
         '''
 
-        # if valid_indicies.shape[0] < trainingData.x.shape[0]:
-        #   raise LittleUsableDataError("Only {} indicies are existing in both sets!".format(valid_indicies[0].shape[0]))
+        if trainingData.shape[0] < idealData.shape[0]:
+           raise UsableDataError('Different x-values length,\
+                                  mapping not possible!'
+                                  .format(valid_indicies[0].shape[0]))
 
         lses = pd.DataFrame(None,
                             columns=trainingData.columns[1:],
@@ -68,9 +73,7 @@ class CPoint2FunctionAllocator:
         matches = {}
 
         for ct in trainingData.columns[1:]:
-            #print("ct.x {}".format(trainingData[ct]))
             for ci in idealData.columns[1:]:
-                #print("\tci.x {}".format(idealData[ci]))
                 y_deviation = abs(idealData[ci] - trainingData[ct])
                 greatestDeviations[ct][ci] = np.max(y_deviation)
                 lses[ct][ci] = (y_deviation**2).sum()
@@ -78,29 +81,38 @@ class CPoint2FunctionAllocator:
 
         return matches, greatestDeviations
 
-    # selection / select
     def mapPoints2Functions(self, testData, idealData, matches,
                             greatestDeviations):
         '''
-        Returns a bokeh panel with a bokeh table and a description text.
+        Mapping the individual test case to the ideal functions is that
+        the existing maximum deviation of the calculated regression does not 
+        exceed the largest deviation between training dataset and the ideal 
+        function chosen for it by more than factor sqrt(2)
 
             Parameters:
-                    testData (pandas.DataFrame): A frame with x,y values
-                                                 representing test data
-                    idealData (pandas.DataFrame): A frame with one column for x and
-                                                  several for y values representing
-                                                  ideal functions
-                    matches (list): Todo
-                    greatestDeviations (pandas.DataFrame): Todo
+                testData (pandas.DataFrame): A frame with x,y values
+                                             representing test data
+                idealData (pandas.DataFrame): A frame with one column for x and
+                                              several for y values representing
+                                              ideal functions
+                matches (dict): A directory which assigns the training 
+                                functions selected by min. least-square to 
+                                ideal functions {T:I, ...}
+                greatesDeviations (pandas.DataFrame): A table which shows the 
+                                                      largest deviation between
+                                                      training (column) and 
+                                                      ideal (row) function
 
             Returns:
-                Panel (bokeh.models.widgets.panels): Panel which can be
-                added as a tab
+                df_resultTable (pandas.DataFrame): x-y pairs of the 
+                                                   test data with its mapping 
+                                                   to a ideal function and
+                                                   corresponding indication of 
+                                                   the deviation
         '''
 
-
         if testData.shape[1] != 2:
-            raise CLineTableDataShapeError(
+            raise TableDataShapeError(
                 "testData.shape[1]: {} is not 2!".format(testData.shape[1]))
 
         df = pd.DataFrame(None, columns=['x', 'y', 'yd', 'n'])
