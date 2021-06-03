@@ -40,8 +40,8 @@ class CPoint2FunctionAllocator:
 
     def preselectFunctions(self, trainingData, idealData):
         '''
-         Choosing the ideal functions for the training functions by how they 
-         minimize the sum of all y-deviations squared (Least-Square)
+        Choosing the ideal functions for the training functions by how they 
+        minimize the sum of all y-deviations squared (Least-Square)
 
             Parameters:
                 trainingData (pandas.DataFrame): A frame with one column for x
