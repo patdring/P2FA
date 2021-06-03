@@ -26,6 +26,8 @@ class CPoint2FunctionAllocator:
     for each and every x-y-pair of values whether or not they can be assigned 
     to the chosen ideal functions.
 
+    Only public attributes and methods are mentioned!
+
     Attributes:
             -
 
