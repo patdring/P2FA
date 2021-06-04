@@ -3,6 +3,7 @@ import sqlalchemy
 import pymysql
 import sqlalchemy as db
 import csv
+from csv import reader
 
 class CBasicTableData:
     '''
@@ -199,19 +200,19 @@ class CLineTableData(CBasicTableData):
                 -
         '''
 
-        with open(csv_file) as f:
-            reader = csv.DictReader(f, delimiter=csv_del)
-            column_names = reader.fieldnames
-            self._data = pd.DataFrame(None, columns=column_names)
-            # CSV is read line/row by line/row
-            for row in reader:
-                self._data.loc[len(self._data)] = row
+        with open(csv_file) as file:
+            data = {}
+            for row in csv.DictReader(file):
+                for key, value in row.items():
+                    if key not in data:
+                        data[key] = []
+                    # Add and convert read row to lost
+                    data[key].append(float(value))
 
-        # TODO: check if this line is neccessary
-        self._data = pd.read_csv(csv_file, delimiter=csv_del)
+        # convert list to dataframe
+        self._data = pd.DataFrame(data, columns=data.keys())
         self._data = self._data.set_index('x')
         self._data.to_sql(self._table_name, self._engine, if_exists='replace')
-
 
 class ResultData(CBasicTableData):
     '''
