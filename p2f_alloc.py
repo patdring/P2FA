@@ -61,11 +61,12 @@ class CPoint2FunctionAllocator:
                                                       ideal (row) function
         '''
 
+        # assumption that xs' are the same in both data sets (value and order)
         if trainingData.shape[0] < idealData.shape[0]:
            raise UsableDataError('Different x-values length,\
                                   mapping not possible!'
                                   .format(valid_indicies[0].shape[0]))
-
+        # empty data structures are created to be filled later on
         lses = pd.DataFrame(None,
                             columns=trainingData.columns[1:],
                             index=idealData.columns[1:])
@@ -74,11 +75,14 @@ class CPoint2FunctionAllocator:
                                           index=idealData.columns[1:])
         matches = {}
 
+        # Each training function is assigned to each ideal function
         for ct in trainingData.columns[1:]:
             for ci in idealData.columns[1:]:
                 y_deviation = abs(idealData[ci] - trainingData[ct])
+                # Building a table with greatest deviation for this combinition 
                 greatestDeviations[ct][ci] = np.max(y_deviation)
                 lses[ct][ci] = (y_deviation**2).sum()
+            # use sorting to get get minimum least-square deaviation
             matches[ct] = lses.sort_values(by=[ct])[ct].index[0]
 
         return matches, greatestDeviations
@@ -120,24 +124,30 @@ class CPoint2FunctionAllocator:
         df = pd.DataFrame(None, columns=['x', 'y', 'yd', 'n'])
         df_resultTable = pd.DataFrame(None, columns=['x', 'y', 'yd', 'n'])
 
+        # perform reshaping for fitting and predicting
         x_ideal = idealData.x.values.reshape(-1, 1)
         x_test = testData.x.values.reshape(-1, 1)
         y_test = testData.y.values.reshape(-1, 1)
 
+        # our model is a linear polynomial function 3rd order
         model = make_pipeline(PolynomialFeatures(3), LinearRegression())
+        # criterion factor calculating here is more resource-efficient
         crit_factor = math.sqrt(2)
 
         for ct in greatestDeviations.columns:
+            # get y values for matching this train/ideal assignment
             y_ideal = idealData[matches[ct]].values.reshape(-1, 1)
 
             model.fit(x_ideal, y_ideal)
             y_pred = model.predict(x_test)
 
+            # build/fill part result table for this assignment and test data
             df['x'] = x_test.T[0]
             df['y'] = y_test.T[0]
             df['yd'] = abs(y_test - y_pred).T[0]
             df['n'] = matches[ct]
 
+            # Add part tables to full result table
             df_resultTable = df_resultTable.append(
                 df.loc[df['yd'] <= greatestDeviations[ct][matches[ct]] *
                        crit_factor])

@@ -65,11 +65,13 @@ class CTestsp2fa(unittest.TestCase):
         matches, greatestDeviations = self._p2f_alloc.preselectFunctions(
             self._df_trainingData, self._df_idealData)
 
+        # check correct training/ideal function matches
         self.assertEqual(matches['y1'], 'y7')
         self.assertEqual(matches['y2'], 'y2')
         self.assertEqual(matches['y3'], 'y3')
         self.assertEqual(matches['y4'], 'y4')
 
+        # check if precalculated greatest devation are found
         self.assertEqual(greatestDeviations['y1']['y5'], 8)
         self.assertEqual(greatestDeviations['y2']['y6'], 12)
         self.assertEqual(greatestDeviations['y3']['y7'], 3)
@@ -93,6 +95,7 @@ class CTestsp2fa(unittest.TestCase):
         resultTable = self._p2f_alloc.mapPoints2Functions(
             self._df_testData, self._df_idealData, matches, greatestDeviations)
 
+        # check (cherry-picking, not all) if results are correct
         self.assertEqual(resultTable.iloc[0]['y'], 1.0)
         self.assertEqual(resultTable.iloc[0]['yd'], 0.9714285714285709)
         self.assertEqual(resultTable.iloc[0]['n'], 'y7')

@@ -136,6 +136,7 @@ class CMultipleTableData(CBasicTableData):
         '''
 
         df_old = pd.DataFrame(None, columns=['x'])
+        # Single CSVs' are read in and joined together 
         for i in range(0, len(csv_file)):
             df_new = pd.read_csv(csv_file[i], delimiter=csv_del)
             df_new = df_new.rename(columns={'y': 'y{}'.format(i + 1)})
@@ -202,9 +203,11 @@ class CLineTableData(CBasicTableData):
             reader = csv.DictReader(f, delimiter=csv_del)
             column_names = reader.fieldnames
             self._data = pd.DataFrame(None, columns=column_names)
+            # CSV is read line/row by line/row
             for row in reader:
                 self._data.loc[len(self._data)] = row
 
+        # TODO: check if this line is neccessary
         self._data = pd.read_csv(csv_file, delimiter=csv_del)
         self._data = self._data.set_index('x')
         self._data.to_sql(self._table_name, self._engine, if_exists='replace')

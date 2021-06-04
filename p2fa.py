@@ -47,10 +47,12 @@ def createDataTablePanel(table_data,
     columns = []
     div = Div(text=text)
 
+    # added factors to beautify table
     dt_width = table_data.columns.shape[0] * 75
     dt_height = table_data.index.shape[0] * 40
 
     for c in table_data.columns:
+        # only format actual numbers
         if 'x' in c or 'y' in c or 'd' in c:
             columns.append(
                 TableColumn(field=c,
@@ -65,6 +67,7 @@ def createDataTablePanel(table_data,
                            width=dt_width,
                            index_position=None,
                            sizing_mode='stretch_both')
+    # layout generated is table and a html div
     layout = column(div, data_table)
 
     return Panel(child=layout, title=title)
@@ -99,6 +102,7 @@ def createMatchingPointsPanel(testData,
     p = figure(title=title)
 
     colors = ['red', 'green', 'blue', 'yellow']
+    # get all (max 4) matching functions
     matches = resultData.n.unique()
 
     if (len(matches.tolist()) == 0):
@@ -106,6 +110,7 @@ def createMatchingPointsPanel(testData,
 
     result = list(zip(matches.tolist(), colors))
 
+    # plot raw data
     p.scatter('x',
               'y',
               source=testData,
@@ -115,6 +120,7 @@ def createMatchingPointsPanel(testData,
               legend_label='test Data')
 
     start_size = 12
+    # deliberate 'overpaint' with relevant points
     for m, c in result:
         p.scatter('x',
                   'y',
@@ -161,6 +167,7 @@ def createRegressionPlotPanel(idealData,
     p = figure(title=title)
 
     colors = ['red', 'green', 'blue', 'yellow']
+    # get all (max 4) matching functions
     matches = resultData.n.unique()
 
     if (len(matches.tolist()) == 0):
@@ -170,10 +177,12 @@ def createRegressionPlotPanel(idealData,
 
     x_ideal = idealData.x.values.reshape(-1, 1)
     step_size = 0.1
+    # generate 'high-resolution' x values for plotting
     x_values = np.arange(np.min(idealData['x']), np.max(idealData['x']),
                          step_size)
     x_values = x_values.reshape(-1, 1)
 
+    # create a linear regression ploynominal 3rd order model
     model = make_pipeline(PolynomialFeatures(3), LinearRegression())
 
     start_line_width = 6
@@ -181,8 +190,10 @@ def createRegressionPlotPanel(idealData,
 
     for m, c in result:
         y_ideal = idealData[m].values.reshape(-1, 1)
+        # calc. regression
         model.fit(x_ideal, y_ideal)
         y_values = model.predict(x_values)
+        # draw regression
         p.line(x_values.flatten(),
                y_values.flatten(),
                line_alpha=0.5,
@@ -241,6 +252,7 @@ def createMappedPointsPanel(idealData,
 
     train = trainingData.columns[1:]
     colors = ['red', 'green', 'blue', 'yellow']
+    # get all (max 4) matching functions
     matches = resultData.n.unique()
 
     if (len(matches.tolist()) == 0):
@@ -250,6 +262,7 @@ def createMappedPointsPanel(idealData,
 
     x_ideal = idealData.x.values.reshape(-1, 1)
     step_size = 0.1
+    # create a linear regression ploynominal 3rd order model
     x_values = np.arange(np.min(idealData['x']), np.max(idealData['x']),
                          step_size)
     x_values = x_values.reshape(-1, 1)
@@ -258,8 +271,11 @@ def createMappedPointsPanel(idealData,
 
     for i in idealData.columns[1:]:
         y_ideal = idealData[i].values.reshape(-1, 1)
+        # calc. regression
         model.fit(x_ideal, y_ideal)
+        # calc. y-values for 'high-resolution' x values
         y_values = model.predict(x_values)
+        # actual regr. lines are drawn black
         if i in matches:
             p.line(x_values.flatten(),
                    y_values.flatten(),
@@ -267,6 +283,7 @@ def createMappedPointsPanel(idealData,
                    line_width=2,
                    color='black',
                    legend_label='match')
+        # regr. lines not meeting the criteria drawn gray
         else:
             p.line(x_values.flatten(),
                    y_values.flatten(),
@@ -275,6 +292,7 @@ def createMappedPointsPanel(idealData,
                    color='lightgray',
                    legend_label='declined')
 
+    # Draw matching points (= train/ideal func. assignment)
     for t, m, c in result:
         p.scatter('x',
                   t,
@@ -356,21 +374,20 @@ def main(argv):
             print('p2fa.py -i <idealfile> -t <trainfile> -e <testfile> [-v]')
             sys.exit(2)
 
+        # cvs files are read in and stored/replaced to according db tables
         trainingData = db.CBasicTableData(trainfile, 'training_data')
         idealData = db.CBasicTableData(idealfile, 'ideal_data')
         testData = db.CLineTableData(testfile, 'test_data')
         resultData = db.ResultData('result_data')
 
+        # Data(Frames) are read back and stored in according vars
         df_trainingData = trainingData.readDataFromDB()
         df_idealData = idealData.readDataFromDB()
         df_testData = testData.readDataFromDB()
 
-        #df_trainingData = pd.read_csv('train.csv',delimiter = ',')
-        #df_idealData = pd.read_csv('ideal.csv',delimiter = ',')
-        #df_testData = pd.read_csv('test.csv',delimiter = ',')
-
         df_testData = df_testData.sort_values(by='x')
 
+        # Visualization is based on adding bokeh tabs to a (main) view
         vis_tabs = []
         vis_tabs.append(
             createDataTablePanel(
@@ -410,7 +427,8 @@ def main(argv):
                            tablefmt='psql'))
             print('\nTest Data (raw)\n' +
                   tabulate(df_testData, headers='keys', tablefmt='psql'))
-
+        
+        # get greates deviations and matches (Train/Ideal)
         p2f_alloc = p2fa.CPoint2FunctionAllocator()
         minLses, greatestDeviations = p2f_alloc.preselectFunctions(
             df_trainingData, df_idealData)
@@ -456,19 +474,20 @@ def main(argv):
                 lines) can be determined or displayed'
             ))
 
-        # write to sql database
+        # write result data to db
         resultData.writeDataToDB(df_resultTable)
         df_resultData = resultData.readDataFromDB()
         vis_tabs.append(
             createDataTablePanel(
                 df_resultData,
                 'Result Data (generated)',
-                '<b>Result</b> database table of the testdata, with mapping and y-deviation'))
+                '<b>Result</b> database table of the testdata, with mapping\
+                and y-deviation'))
 
         if verbose:
             print('Result Table\n' +
                   tabulate(df_resultData, headers='keys', tablefmt='psql'))
-
+        # all tabs are displayed now
         show(Tabs(tabs=vis_tabs))
 
     except p2fa.UsableDataError as e:
@@ -494,5 +513,6 @@ def main(argv):
         print('Program finished normally!')
 
 if __name__ == '__main__':
+    # getting and printing runtime to have an eye on performance/ressources
     runtime = timeit.Timer(lambda: main(sys.argv[1:]))
     print('Runtime: {}ms'.format(runtime.timeit(1)))
