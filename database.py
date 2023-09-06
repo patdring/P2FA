@@ -24,10 +24,10 @@ class CBasicTableData:
     def __init__(self,
                  csv_file,
                  table_name,
-                 db_user='root',
-                 db_password='Tr5jeb6X!',
+                 db_user='patrick',
+                 db_password='mypass',
                  db_address='127.0.0.1',
-                 db_name='test'):
+                 db_name='test2'):
         '''
         Constructs all the necessary attributes for the database 
         seriallization object. 
@@ -101,10 +101,10 @@ class CMultipleTableData(CBasicTableData):
     def __init__(self,
                  csv_file,
                  table_name,
-                 db_user='root',
-                 db_password='Tr5jeb6X!',
+                 db_user='patrick',
+                 db_password='mypass',
                  db_address='127.0.0.1',
-                 db_name='test'):
+                 db_name='test2'):
         '''
         Constructs all the necessary attributes for the database 
         seriallization object. 
@@ -166,10 +166,10 @@ class CLineTableData(CBasicTableData):
     def __init__(self,
                  csv_file,
                  table_name,
-                 db_user='root',
-                 db_password='Tr5jeb6X!',
+                 db_user='patrick',
+                 db_password='mypass',
                  db_address='127.0.0.1',
-                 db_name='test'):
+                 db_name='test2'):
         '''
         Constructs all the necessary attributes for the database 
         seriallization object. 
@@ -233,10 +233,10 @@ class ResultData(CBasicTableData):
     def __init__(self,
                  table_name,
                  csv_file=None,
-                 db_user='root',
-                 db_password='Tr5jeb6X!',
+                 db_user='patrick',
+                 db_password='mypass',
                  db_address='127.0.0.1',
-                 db_name='test'):
+                 db_name='test2'):
         '''
         Constructs all the necessary attributes for the database 
         deseriallization object. 
