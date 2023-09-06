@@ -10,6 +10,16 @@ This project aims to allocate data points to their closest ideal functions among
   
 - **Map Points to Functions**: Assigns test data points to the closest ideal functions, based on their calculated deviation.
 
+- **Identifies the largest deviations between training and ideal functions
+
+- **Maps test data points to the ideal functions
+
+- **Includes unit tests
+
+- **Uses a MySQL database for data storage
+
+- **Bokeh for interactive visualizations
+
 ## File Overview
 
 - `database.py`: Responsible for managing the data storage, including reading and writing data sets like test data, training data, and ideal function data.
